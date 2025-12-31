@@ -3,48 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FairWay Caddie V47</title>
+    <title>FairWay Caddie V48</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --bg-body: #000000; --bg-card: #111111; --text-main: #f8fafc; --glass: rgba(0, 0, 0, 0.95); }
-        .light-mode { --bg-body: #f8fafc; --bg-card: #ffffff; --text-main: #0f172a; --glass: rgba(255, 255, 255, 0.95); }
+        :root { --bg-body: #000000; --bg-card: #111111; --text-main: #f8fafc; }
         body { background-color: var(--bg-body); color: var(--text-main); font-family: system-ui, sans-serif; height: 100dvh; width: 100vw; overflow: hidden; }
         .card { background-color: var(--bg-card); border: 1px solid #333; transition: all 0.3s; }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); }
-        @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
-        .animate-logo { animation: pulse-slow 3s infinite ease-in-out; }
         .hide-scroll::-webkit-scrollbar { display: none; }
+        /* Animación de carga simple */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .loading-text { animation: pulse 2s infinite; }
     </style>
 </head>
 <body class="flex flex-col">
-    <div id="splashScreen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center transition-opacity duration-1000">
-        <div class="relative w-72 h-72 animate-logo"><img src="logo.png" onerror="this.style.display='none'" class="w-full h-full object-contain"></div>
-        <p class="text-emerald-500 font-bold mt-4 animate-pulse">Cargando V47...</p>
+
+    <div id="splashScreen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center">
+        <div class="w-40 h-40 mb-4">
+            <img src="logo.png" onerror="this.style.display='none'" class="w-full h-full object-contain">
+        </div>
+        <h1 class="text-3xl font-black text-white mb-2">FAIRWAY CADDIE</h1>
+        <p class="text-emerald-500 font-bold loading-text mb-8">Cargando...</p>
+        
+        <button onclick="document.getElementById('splashScreen').style.display='none'" class="border border-red-500 text-red-500 px-4 py-2 rounded text-xs font-bold hover:bg-red-900/50">
+            ⚠️ FORZAR INICIO (Si no carga)
+        </button>
     </div>
 
     <div id="homeScreen" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6">
-        <div class="text-center mt-8 mb-8"><h1 class="text-4xl font-black tracking-tighter">FAIRWAY CADDIE</h1><p class="text-emerald-400 font-bold text-[10px] tracking-[0.2em] uppercase">V47 - Final Fix</p></div>
+        <div class="text-center mt-8 mb-8">
+            <h1 class="text-4xl font-black tracking-tighter">FAIRWAY CADDIE</h1>
+            <p class="text-emerald-400 font-bold text-[10px] tracking-[0.2em] uppercase">V48 - Safety Mode</p>
+        </div>
+
         <div id="resumeContainer" class="hidden flex gap-3 mb-6">
-            <button onclick="resumeGame()" class="flex-1 card p-5 rounded-[2rem] text-left flex justify-between items-center bg-emerald-900/20 border-emerald-500/50"><div><span class="bg-emerald-500 text-black px-2 py-0.5 rounded text-[9px] font-black uppercase">EN CURSO</span><h2 class="text-lg font-black">Continuar</h2></div><i data-lucide="play"></i></button>
-            <button onclick="discardSavedGame()" class="w-20 card rounded-[2rem] flex flex-col items-center justify-center text-red-400 border-red-900/30"><i data-lucide="trash-2" class="w-6 h-6 mb-1"></i><span class="text-[9px] font-bold">BORRAR</span></button>
+            <button onclick="resumeGame()" class="flex-1 card p-5 rounded-[2rem] text-left flex justify-between items-center bg-emerald-900/20 border-emerald-500/50">
+                <div><span class="bg-emerald-500 text-black px-2 py-0.5 rounded text-[9px] font-black uppercase">EN CURSO</span><h2 class="text-lg font-black">Continuar</h2></div>
+                <i data-lucide="play"></i>
+            </button>
+            <button onclick="discardSavedGame()" class="w-20 card rounded-[2rem] flex flex-col items-center justify-center text-red-400 border-red-900/30">
+                <i data-lucide="trash-2" class="w-6 h-6 mb-1"></i><span class="text-[9px] font-bold">BORRAR</span>
+            </button>
         </div>
+
         <div class="space-y-4">
-            <button onclick="goToSetup()" class="w-full card p-6 rounded-[2rem] text-left relative overflow-hidden group"><div class="absolute right-0 top-0 p-4 opacity-10"><i data-lucide="flag" class="w-20 h-20 text-emerald-500"></i></div><span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Nueva Partida</span><h2 class="text-2xl font-black">Jugar Vuelta</h2><p class="text-xs opacity-50">18 Hoyos, GPS & Stableford</p></button>
-            <button onclick="goToTrainingHub()" class="w-full card p-6 rounded-[2rem] text-left relative overflow-hidden group"><div class="absolute right-0 top-0 p-4 opacity-10"><i data-lucide="dumbbell" class="w-20 h-20 text-blue-500"></i></div><span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Academy</span><h2 class="text-2xl font-black">Entrenar</h2><p class="text-xs opacity-50">Golf & Gym</p></button>
+            <button onclick="goToSetup()" class="w-full card p-6 rounded-[2rem] text-left relative overflow-hidden group">
+                <div class="absolute right-0 top-0 p-4 opacity-10"><i data-lucide="flag" class="w-20 h-20 text-emerald-500"></i></div>
+                <span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Nueva Partida</span>
+                <h2 class="text-2xl font-black">Jugar Vuelta</h2>
+            </button>
+            <button onclick="goToTrainingHub()" class="w-full card p-6 rounded-[2rem] text-left relative overflow-hidden group">
+                <div class="absolute right-0 top-0 p-4 opacity-10"><i data-lucide="dumbbell" class="w-20 h-20 text-blue-500"></i></div>
+                <span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Academy</span>
+                <h2 class="text-2xl font-black">Entrenar</h2>
+            </button>
         </div>
-        <button onclick="superReset()" class="mt-10 text-[10px] text-red-500 underline opacity-50">Reset Fábrica (Si algo falla)</button>
+        
+        <button onclick="localStorage.clear(); location.reload()" class="mt-12 text-xs text-red-500 underline w-full text-center opacity-50">Resetear Todo (Fábrica)</button>
     </div>
 
     <div id="setupScreen" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6">
-        <div class="flex justify-between mb-6"><button onclick="goHome()" class="p-2 rounded-full card"><i data-lucide="arrow-left"></i></button><button onclick="toggleTheme()" class="p-2 rounded-full card">☀️</button></div>
+        <div class="flex justify-between mb-6"><button onclick="goHome()" class="p-2 rounded-full card"><i data-lucide="arrow-left"></i></button></div>
         <h1 class="text-3xl font-black text-center mb-6">CONFIGURACIÓN</h1>
         <div class="flex gap-3 mb-4">
             <div class="card p-4 rounded-3xl flex-1 border-t-4 border-emerald-500"><label class="block text-[9px] font-bold opacity-50 mb-1 text-center">HCP REAL</label><input type="number" id="handicapRealInput" class="w-full text-3xl p-1 text-center font-black bg-transparent outline-none" placeholder="24"></div>
             <div class="card p-4 rounded-3xl flex-1 border-t-4 border-amber-500"><label class="block text-[9px] font-bold opacity-50 mb-1 text-center">HCP RETO</label><input type="number" id="handicapTargetInput" class="w-full text-3xl p-1 text-center font-black bg-transparent outline-none" placeholder="18"></div>
-        </div>
-        <div class="card p-4 rounded-3xl mb-6 flex flex-col gap-2">
-            <button onclick="setMode(1, 18)" class="w-full py-3 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold border border-emerald-500/20">18 Hoyos</button>
         </div>
         <button onclick="startNewGame()" class="w-full bg-emerald-600 text-white text-lg font-bold py-5 rounded-3xl mt-auto">AL TEE DEL 1</button>
     </div>
@@ -56,7 +79,6 @@
                 <button onclick="finishRoundNow()" class="text-[9px] font-bold bg-red-500/20 text-red-300 px-3 py-1 rounded-full border border-red-500/30">FIN</button>
             </div>
             <div class="flex justify-between items-end bg-black/40 p-3 rounded-2xl border border-white/5">
-                <div class="text-center"><span class="text-[9px] text-amber-500 font-black block">OBJ</span><span class="text-2xl font-black text-amber-500" id="displayTargetStrokes">0</span></div>
                 <div class="text-center"><span class="text-[9px] text-emerald-500 font-black block">PAR NETO</span><span class="text-2xl font-black text-emerald-500" id="displayPersonalPar">0</span></div>
                 <div class="text-center"><span class="text-[9px] opacity-50 font-bold block">TOTAL</span><span class="text-2xl font-black" id="runningScoreDisplay">0</span></div>
             </div>
@@ -64,20 +86,18 @@
 
         <div id="checklistContainer" class="flex-1 overflow-y-auto p-4 space-y-3 pb-48"></div>
 
-        <button onclick="toggleGPS()" id="gpsBtn" class="fixed right-6 bottom-32 z-50 bg-blue-600 text-white p-4 rounded-full shadow-2xl active:scale-90"><i data-lucide="satellite" class="w-6 h-6"></i></button>
-        
+        <button onclick="toggleGPS()" id="gpsBtn" class="fixed right-6 bottom-32 z-50 bg-blue-600 text-white p-4 rounded-full shadow-2xl"><i data-lucide="satellite" class="w-6 h-6"></i></button>
         <div id="gpsPanel" class="hidden fixed inset-x-6 bottom-48 bg-black/90 backdrop-blur border border-blue-500/30 p-5 rounded-3xl z-50 text-center">
-            <p class="text-[10px] text-blue-400 font-bold uppercase mb-2">Medidor de Tiro</p>
             <h3 class="text-5xl font-black text-white mb-2" id="gpsDistance">0<span class="text-lg opacity-50">m</span></h3>
-            <p id="gpsStatus" class="text-xs opacity-50 mb-4">Cargando...</p>
+            <p id="gpsStatus" class="text-xs opacity-50 mb-4">Calculando...</p>
             <button onclick="toggleGPS()" class="bg-slate-800 px-6 py-2 rounded-xl text-xs font-bold">Cerrar</button>
         </div>
 
-        <div class="glass-panel absolute bottom-0 left-0 right-0 z-30 pb-8 pt-3 rounded-t-[2rem]">
-            <div class="flex justify-center gap-8 py-2 border-b border-white/5 mb-2">
-                <button onclick="setMood('calm')" id="mood-calm" class="mood-btn text-3xl">🙂</button>
-                <button onclick="setMood('normal')" id="mood-normal" class="mood-btn text-3xl">😐</button>
-                <button onclick="setMood('angry')" id="mood-angry" class="mood-btn text-3xl">😡</button>
+        <div class="bg-black border-t border-white/10 absolute bottom-0 left-0 right-0 z-30 pb-8 pt-3 rounded-t-[2rem]">
+            <div class="flex justify-center gap-8 py-2 mb-2">
+                <button onclick="setMood('calm')" id="mood-calm" class="text-3xl opacity-30 hover:opacity-100 transition-opacity">🙂</button>
+                <button onclick="setMood('normal')" id="mood-normal" class="text-3xl opacity-30 hover:opacity-100 transition-opacity">😐</button>
+                <button onclick="setMood('angry')" id="mood-angry" class="text-3xl opacity-30 hover:opacity-100 transition-opacity">😡</button>
             </div>
             <div class="px-5 flex items-center gap-3">
                 <button onclick="prevHole()" class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center"><i data-lucide="arrow-left"></i></button>
@@ -92,7 +112,7 @@
     </div>
 
     <div id="summaryScreen" class="hidden absolute inset-0 bg-black z-[60] flex flex-col overflow-y-auto p-6">
-        <h1 class="text-3xl font-black text-center mt-10 mb-2">RESUMEN</h1>
+        <h1 class="text-3xl font-black text-center mt-10 mb-8">RESUMEN</h1>
         <div class="flex justify-center gap-10 text-center mb-8">
             <div><span class="text-6xl font-black" id="finalGross">--</span><p class="text-xs font-bold opacity-50">GROSS</p></div>
             <div><span class="text-6xl font-black text-indigo-400" id="finalStableford">--</span><p class="text-xs font-bold text-indigo-400">STB PTS</p></div>
@@ -104,12 +124,15 @@
         <div class="flex justify-between mb-6"><button onclick="goHome()" class="p-2 rounded-full card"><i data-lucide="arrow-left"></i></button><div class="flex gap-4"><button onclick="switchTab('golf')" class="text-sm font-bold text-emerald-500">GOLF</button><button onclick="switchTab('gym')" class="text-sm font-bold text-slate-500">GYM</button></div><div></div></div>
         
         <div id="golfContent">
-            <div class="card p-6 rounded-[2rem] mb-4 border-t-4 border-blue-500"><h2 class="text-xl font-black mb-2">Entreno Técnico</h2><p class="text-xs opacity-50 mb-4">Mejora tu swing hoy.</p><button onclick="startTrainingSession('putt')" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-sm mb-2">Putt</button><button onclick="startTrainingSession('short')" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-sm mb-2">Juego Corto</button></div>
+            <div class="card p-6 rounded-[2rem] mb-4 border-t-4 border-blue-500"><h2 class="text-xl font-black mb-2">Entreno Técnico</h2>
+                <button onclick="startTrainingSession('putt')" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-sm mb-2">Putt</button>
+                <button onclick="startTrainingSession('short')" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-sm mb-2">Juego Corto</button>
+            </div>
         </div>
 
         <div id="gymContent" class="hidden">
-            <div class="card p-6 rounded-[2rem] mb-4 border-t-4 border-violet-500"><h2 class="text-xl font-black mb-2">Gimnasio</h2><p class="text-xs opacity-50 mb-4">Potencia y movilidad.</p>
-                <button onclick="startGymSession('warmup')" class="w-full bg-violet-900/50 py-3 rounded-xl font-bold text-sm mb-2 border border-violet-500/30 flex items-center justify-center gap-2">🔥 Calentamiento</button>
+            <div class="card p-6 rounded-[2rem] mb-4 border-t-4 border-violet-500"><h2 class="text-xl font-black mb-2">Gimnasio</h2>
+                <button onclick="startGymSession('warmup')" class="w-full bg-violet-900/50 py-3 rounded-xl font-bold text-sm mb-2 border border-violet-500/30">🔥 Calentamiento</button>
                 <button onclick="startGymSession('day1')" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-sm mb-2">Día 1: Fuerza</button>
                 <button onclick="startGymSession('day2')" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-sm mb-2">Día 2: Potencia</button>
             </div>
@@ -122,70 +145,93 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DATOS
+        // --- GESTIÓN DE ERRORES GLOBAL ---
+        window.onerror = function(msg, url, line) {
+            alert("⚠️ Error detectado: " + msg + "\nLínea: " + line + "\nSe forzará el inicio.");
+            document.getElementById('splashScreen').style.display = 'none';
+            return false;
+        };
+
         const courseData = Array(18).fill(null).map((_, i) => ({ h: i+1, p: (i%2===0?4: (i%3===0?3:5)), si: 18-i })); 
         let currentHole = 1, startHoleLimit = 1, endHoleLimit = 18, hcpReal = 24, hcpTarget = 18;
         let roundData = {}, currentShots = [], currentScore = 0, currentMood = 'normal';
         let gpsWatch = null, gpsStart = null;
 
-        // IMÁGENES PNG
+        // IMÁGENES
         const gymDrills = {
             warmup: [ {n:"Gato-Vaca", i:"calentamiento.png"}, {n:"Open Books", i:"calentamiento.png"} ],
             day1: [ {n:"Box Jumps", i:"dia1.png"}, {n:"Slams", i:"dia1.png"}, {n:"Sentadilla Búlgara", i:"dia1_2.png"} ],
             day2: [ {n:"Lanzamiento", i:"dia2.png"}, {n:"Hachazos", i:"dia2.png"}, {n:"Press Pecho", i:"dia2_2.png"} ]
         };
+        const golfDrills = {
+            putt: [ {n:"10 Putts 1m", xp:50}, {n:"Reloj", xp:100} ],
+            short: [ {n:"20 Chips", xp:100}, {n:"Bunker", xp:150} ]
+        };
 
-        window.onload = () => { lucide.createIcons(); setTimeout(() => document.getElementById('splashScreen').classList.add('opacity-0'), 1500); setTimeout(() => document.getElementById('splashScreen').classList.add('hidden'), 2500); checkSaved(); };
-
-        function checkSaved() { 
-            // Si hay datos viejos corruptos, esto los limpia
+        window.onload = () => {
             try {
-                if(localStorage.getItem('golfState_v47')) { 
-                    const s = JSON.parse(localStorage.getItem('golfState_v47'));
-                    if(!s.roundData || !s.roundData[1]) throw new Error("Datos corruptos");
-                    document.getElementById('resumeContainer').classList.remove('hidden'); 
-                    document.getElementById('resumeContainer').classList.add('flex'); 
+                if(typeof lucide !== 'undefined') lucide.createIcons();
+                setTimeout(() => { document.getElementById('splashScreen').style.display = 'none'; }, 2000);
+                checkSaved();
+            } catch(e) {
+                console.error(e);
+                alert("Error al iniciar: " + e.message);
+                document.getElementById('splashScreen').style.display = 'none';
+            }
+        };
+
+        function checkSaved() {
+            try {
+                const s = JSON.parse(localStorage.getItem('golfState_v48'));
+                if(s && s.roundData) {
+                    document.getElementById('resumeContainer').classList.remove('hidden');
+                    document.getElementById('resumeContainer').classList.add('flex');
                 }
-            } catch(e) { localStorage.removeItem('golfState_v47'); }
+            } catch(e) { localStorage.removeItem('golfState_v48'); }
         }
-        function discardSavedGame() { localStorage.removeItem('golfState_v47'); location.reload(); }
-        function superReset() { localStorage.clear(); location.reload(); }
-        function goHome() { document.querySelectorAll('[id$="Screen"], [id$="Hub"]').forEach(e => e.classList.add('hidden')); document.getElementById('homeScreen').classList.remove('hidden'); document.getElementById('splashScreen').classList.add('hidden'); }
-        function goToSetup() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('setupScreen').classList.remove('hidden'); }
-        function goToTrainingHub() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('trainingHub').classList.remove('hidden'); }
-        
+
+        function goHome() { 
+            ['setupScreen','gameScreen','summaryScreen','trainingHub','activeTrainingScreen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('homeScreen').classList.remove('hidden'); 
+        }
+
         function startNewGame() {
             hcpReal = parseFloat(document.getElementById('handicapRealInput').value) || 24;
             hcpTarget = parseFloat(document.getElementById('handicapTargetInput').value) || 18;
-            localStorage.removeItem('golfState_v47'); roundData = {}; currentHole = 1;
+            localStorage.removeItem('golfState_v48'); roundData = {}; 
             loadHole(1);
-            document.getElementById('setupScreen').classList.add('hidden'); document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex');
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex');
         }
 
         function resumeGame() {
-            const s = JSON.parse(localStorage.getItem('golfState_v47'));
+            const s = JSON.parse(localStorage.getItem('golfState_v48'));
             hcpReal = s.hcpReal; roundData = s.roundData; currentHole = s.currentHole;
             loadHole(currentHole);
-            document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex');
+            document.getElementById('homeScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex');
         }
+
+        function discardSavedGame() { localStorage.removeItem('golfState_v48'); location.reload(); }
+        function goToSetup() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('setupScreen').classList.remove('hidden'); }
+        function goToTrainingHub() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('trainingHub').classList.remove('hidden'); }
 
         function loadHole(h) {
             currentHole = h;
             const par = courseData[h-1].p;
             document.getElementById('holeDisplay').innerText = `Hoyo ${h}`;
             document.getElementById('parDisplay').innerText = par;
-            
-            // Inicializar si no existen datos
-            if(roundData[h] && roundData[h].shots && roundData[h].shots.length > 0) {
-                currentScore = roundData[h].score; currentShots = roundData[h].shots; currentMood = roundData[h].mood;
+
+            if(roundData[h]) {
+                currentScore = roundData[h].score; currentShots = roundData[h].shots; currentMood = roundData[h].mood || 'normal';
             } else {
-                // Generar golpes frescos
-                currentScore = par + Math.floor(hcpReal/18) + (courseData[h-1].si <= hcpReal%18 ? 1 : 0);
+                const strokes = Math.floor(hcpReal/18) + (courseData[h-1].si <= hcpReal%18 ? 1 : 0);
+                currentScore = par + strokes;
                 currentMood = 'normal';
                 let shots = Array(currentScore).fill("Golpe de Avance");
                 if(currentScore>=1) shots[currentScore-1] = "Meter Putt";
                 if(currentScore>=2) shots[currentScore-2] = "Aproach / Lag Putt";
-                if(currentScore>=4) shots[0] = "Salida (Driver/Madera)";
+                if(currentScore>=4) shots[0] = "Salida";
                 currentShots = shots.map(n => ({name: n, status: 'pending'}));
             }
             updateUI();
@@ -194,46 +240,40 @@
         function updateUI() {
             document.getElementById('currentHoleScore').innerText = currentScore;
             
-            // STABLEFORD & DASHBOARD (ARREGLADO)
+            // STABLEFORD
             const par = courseData[currentHole-1].p;
             const strokes = Math.floor(hcpReal/18) + (courseData[currentHole-1].si <= hcpReal%18 ? 1 : 0);
             const net = currentScore - strokes;
             const pts = (par - net) + 2;
             document.getElementById('stablefordDisplay').innerText = pts < 0 ? 0 : pts;
-            
-            // Actualizar Marcadores Superiores
-            const holeTarget = par + Math.floor(hcpTarget/18) + (courseData[currentHole-1].si <= hcpTarget%18 ? 1 : 0);
-            const holePersonal = par + strokes;
-            document.getElementById('displayTargetStrokes').innerText = holeTarget;
-            document.getElementById('displayPersonalPar').innerText = holePersonal;
-            
-            // Calc Total
-            let runningTotal = 0;
-            let tempRound = {...roundData};
-            tempRound[currentHole] = { score: currentScore };
-            for(let key in tempRound) { runningTotal += tempRound[key].score; }
-            document.getElementById('runningScoreDisplay').innerText = runningTotal;
 
-            // CHECKLIST RENDER
+            document.getElementById('displayPersonalPar').innerText = par + strokes;
+            
+            let total = 0;
+            let tempRound = {...roundData}; tempRound[currentHole] = {score: currentScore};
+            for(let k in tempRound) total += tempRound[k].score;
+            document.getElementById('runningScoreDisplay').innerText = total;
+
+            // CHECKLIST
             const list = document.getElementById('checklistContainer');
             list.innerHTML = '';
             currentShots.forEach((s, i) => {
-                const color = s.status === 'success' ? 'bg-emerald-600 border-emerald-500' : (s.status === 'fail' ? 'bg-red-900/20 border-red-900/50' : 'bg-slate-800 border-slate-700');
+                const color = s.status === 'success' ? 'bg-emerald-900 border-emerald-500' : (s.status === 'fail' ? 'bg-red-900/20 border-red-900' : 'bg-slate-800 border-slate-700');
                 const html = `
                 <div class="card p-4 rounded-2xl mb-3 ${color}">
-                    <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black uppercase opacity-50">GOLPE ${i+1}</span></div>
+                    <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-black uppercase opacity-50">GOLPE ${i+1}</span></div>
                     <h3 class="font-bold text-lg mb-3 ${s.status === 'fail' ? 'line-through opacity-50' : ''}">${s.name}</h3>
                     ${s.status === 'pending' ? 
-                    `<div class="flex gap-2"><button onclick="setShot(${i}, 'success')" class="flex-1 bg-emerald-500 text-black font-bold py-2 rounded-xl text-xs">BIEN</button><button onclick="setShot(${i}, 'fail')" class="flex-1 bg-slate-900 text-red-400 border border-red-900/50 font-bold py-2 rounded-xl text-xs">FALLO</button></div>` 
+                    `<div class="flex gap-2"><button onclick="setShot(${i}, 'success')" class="flex-1 bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs">BIEN</button><button onclick="setShot(${i}, 'fail')" class="flex-1 bg-slate-700 text-red-300 border border-red-900 font-bold py-2 rounded-xl text-xs">FALLO</button></div>` 
                     : ''}
                 </div>`;
                 list.innerHTML += html;
             });
-            
+
             // Moods
-            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-            document.getElementById('mood-'+currentMood)?.classList.add('selected');
-            
+            document.querySelectorAll('#gameScreen button.text-3xl').forEach(b => b.classList.add('opacity-30'));
+            if(currentMood) document.getElementById('mood-'+currentMood)?.classList.remove('opacity-30');
+
             saveState();
         }
 
@@ -245,7 +285,7 @@
 
         function adjustScore(d) { currentScore += d; if(currentScore<1) currentScore=1; updateUI(); }
         function setMood(m) { currentMood = m; updateUI(); }
-        function saveState() { roundData[currentHole] = {score: currentScore, shots: currentShots, mood: currentMood}; localStorage.setItem('golfState_v47', JSON.stringify({hcpReal, roundData, currentHole})); }
+        function saveState() { roundData[currentHole] = {score: currentScore, shots: currentShots, mood: currentMood}; localStorage.setItem('golfState_v48', JSON.stringify({hcpReal, roundData, currentHole})); }
         
         function nextHole() {
             saveState();
@@ -271,9 +311,9 @@
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('summaryScreen').classList.remove('hidden');
         }
-        function hardReset() { localStorage.removeItem('golfState_v47'); location.reload(); }
+        function hardReset() { localStorage.removeItem('golfState_v48'); location.reload(); }
 
-        // GPS
+        // GPS & TRAINING SIMPLIFICADOS
         function toggleGPS() {
             const p = document.getElementById('gpsPanel');
             if(p.classList.contains('hidden')) {
@@ -281,26 +321,17 @@
                 if(navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(pos => {
                         gpsStart = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-                        document.getElementById('gpsStatus').innerText = "Midiendo distancia desde punto A...";
+                        document.getElementById('gpsStatus').innerText = "Midiendo...";
                         gpsWatch = navigator.geolocation.watchPosition(curr => {
                             const d = getDist(gpsStart.lat, gpsStart.lng, curr.coords.latitude, curr.coords.longitude);
                             document.getElementById('gpsDistance').innerHTML = `${Math.round(d)}<span class="text-lg opacity-50">m</span>`;
                         });
                     });
                 }
-            } else {
-                p.classList.add('hidden');
-                if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch);
-            }
+            } else { p.classList.add('hidden'); if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch); }
         }
-        function getDist(lat1,lon1,lat2,lon2) {
-            const R = 6371e3; const φ1 = lat1 * Math.PI/180; const φ2 = lat2 * Math.PI/180;
-            const Δφ = (lat2-lat1) * Math.PI/180; const Δλ = (lon2-lon1) * Math.PI/180;
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ1) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
+        function getDist(lat1,lon1,lat2,lon2) { const R = 6371e3; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180; const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
 
-        // TRAINING
         function switchTab(t) {
             if(t==='golf') { document.getElementById('golfContent').classList.remove('hidden'); document.getElementById('gymContent').classList.add('hidden'); }
             else { document.getElementById('golfContent').classList.add('hidden'); document.getElementById('gymContent').classList.remove('hidden'); }
@@ -310,16 +341,23 @@
             const container = document.getElementById('drillsContainer');
             container.innerHTML = '';
             drills.forEach(d => {
-                container.innerHTML += `
-                <div class="card p-4 rounded-2xl">
-                    <h3 class="font-bold mb-2">${d.n}</h3>
-                    <img src="${d.i}" class="w-full rounded-xl border border-white/10" onerror="this.style.display='none'">
-                </div>`;
+                container.innerHTML += `<div class="card p-4 rounded-2xl"><h3 class="font-bold mb-2">${d.n}</h3><img src="${d.i}" class="w-full rounded-xl border border-white/10" onerror="this.style.display='none'"></div>`;
+            });
+            document.getElementById('trainingHub').classList.add('hidden');
+            document.getElementById('activeTrainingScreen').classList.remove('hidden'); document.getElementById('activeTrainingScreen').classList.add('flex');
+        }
+        function startTrainingSession(type) {
+             const drills = golfDrills[type] || [];
+             const container = document.getElementById('drillsContainer');
+             container.innerHTML = '';
+             drills.forEach(d => {
+                container.innerHTML += `<div class="card p-4 rounded-2xl flex justify-between"><span class="font-bold">${d.n}</span><span class="text-emerald-500 font-bold">+${d.xp} XP</span></div>`;
             });
             document.getElementById('trainingHub').classList.add('hidden');
             document.getElementById('activeTrainingScreen').classList.remove('hidden'); document.getElementById('activeTrainingScreen').classList.add('flex');
         }
         function finishTraining() { document.getElementById('activeTrainingScreen').classList.add('hidden'); document.getElementById('activeTrainingScreen').classList.remove('flex'); goHome(); }
+
     </script>
 </body>
 </html>

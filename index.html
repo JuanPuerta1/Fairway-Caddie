@@ -3,361 +3,509 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FairWay Caddie V48</title>
+    <title>FairWay Caddie v42</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --bg-body: #000000; --bg-card: #111111; --text-main: #f8fafc; }
-        body { background-color: var(--bg-body); color: var(--text-main); font-family: system-ui, sans-serif; height: 100dvh; width: 100vw; overflow: hidden; }
-        .card { background-color: var(--bg-card); border: 1px solid #333; transition: all 0.3s; }
+        /* --- ESTILOS BASE --- */
+        :root {
+            --bg-body: #000000;
+            --bg-card: #111111;
+            --bg-input: #0a0a0a; 
+            --text-main: #f8fafc; --text-sub: #94a3b8; --border: #333333;
+            --glass: rgba(0, 0, 0, 0.95); 
+            --glass-border: rgba(255,255,255,0.1);
+        }
+        .light-mode {
+            --bg-body: #f8fafc; --bg-card: #ffffff; --bg-input: #f1f5f9;
+            --text-main: #0f172a; --text-sub: #64748b; --border: #e2e8f0;
+            --glass: rgba(255, 255, 255, 0.95); --glass-border: rgba(255,255,255,0.5);
+        }
+        body { 
+            height: 100dvh; width: 100vw; overflow: hidden; 
+            background-color: var(--bg-body); color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent;
+        }
+        .card { background-color: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); transition: all 0.3s; }
+        .glass-panel { background: var(--glass); backdrop-filter: blur(12px); border-top: 1px solid var(--glass-border); }
+        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); touch-action: manipulation; }
+        button:active { transform: scale(0.96); }
+        .mode-btn { border: 1px solid var(--border); background: var(--bg-card); color: var(--text-sub); }
+        .mode-btn.selected { border: 2px solid #10b981; background-color: rgba(16, 185, 129, 0.1); color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+        .mood-btn { filter: grayscale(100%); opacity: 0.4; transition: all 0.3s; }
+        .mood-btn.selected { filter: grayscale(0%); opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+        .tab-btn { opacity: 0.5; border-bottom: 2px solid transparent; }
+        .tab-btn.active { opacity: 1; border-bottom: 2px solid #10b981; color: #10b981; }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        /* Animación de carga simple */
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .loading-text { animation: pulse 2s infinite; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
+        .animate-logo { animation: pulse-slow 3s infinite ease-in-out; }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-msg { animation: fade-in-up 0.8s ease-out forwards; }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <div id="splashScreen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center">
-        <div class="w-40 h-40 mb-4">
-            <img src="logo.png" onerror="this.style.display='none'" class="w-full h-full object-contain">
+    <div id="splashScreen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div class="relative w-72 h-72 animate-logo">
+            <img src="logo.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1187/1187588.png'" alt="FairWay Caddie" class="relative w-full h-full object-contain">
         </div>
-        <h1 class="text-3xl font-black text-white mb-2">FAIRWAY CADDIE</h1>
-        <p class="text-emerald-500 font-bold loading-text mb-8">Cargando...</p>
-        
-        <button onclick="document.getElementById('splashScreen').style.display='none'" class="border border-red-500 text-red-500 px-4 py-2 rounded text-xs font-bold hover:bg-red-900/50">
-            ⚠️ FORZAR INICIO (Si no carga)
-        </button>
     </div>
 
-    <div id="homeScreen" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6">
+    <div id="homeScreen" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6 relative">
         <div class="text-center mt-8 mb-8">
-            <h1 class="text-4xl font-black tracking-tighter">FAIRWAY CADDIE</h1>
-            <p class="text-emerald-400 font-bold text-[10px] tracking-[0.2em] uppercase">V48 - Safety Mode</p>
+            <h1 class="text-4xl font-black text-white tracking-tighter mb-1">FAIRWAY CADDIE</h1>
+            <p class="text-emerald-400 font-bold uppercase text-[10px] tracking-[0.2em]">Tu compañero en el campo</p>
         </div>
 
-        <div id="resumeContainer" class="hidden flex gap-3 mb-6">
-            <button onclick="resumeGame()" class="flex-1 card p-5 rounded-[2rem] text-left flex justify-between items-center bg-emerald-900/20 border-emerald-500/50">
-                <div><span class="bg-emerald-500 text-black px-2 py-0.5 rounded text-[9px] font-black uppercase">EN CURSO</span><h2 class="text-lg font-black">Continuar</h2></div>
-                <i data-lucide="play"></i>
-            </button>
-            <button onclick="discardSavedGame()" class="w-20 card rounded-[2rem] flex flex-col items-center justify-center text-red-400 border-red-900/30">
-                <i data-lucide="trash-2" class="w-6 h-6 mb-1"></i><span class="text-[9px] font-bold">BORRAR</span>
-            </button>
-        </div>
-
-        <div class="space-y-4">
-            <button onclick="goToSetup()" class="w-full card p-6 rounded-[2rem] text-left relative overflow-hidden group">
-                <div class="absolute right-0 top-0 p-4 opacity-10"><i data-lucide="flag" class="w-20 h-20 text-emerald-500"></i></div>
-                <span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Nueva Partida</span>
-                <h2 class="text-2xl font-black">Jugar Vuelta</h2>
-            </button>
-            <button onclick="goToTrainingHub()" class="w-full card p-6 rounded-[2rem] text-left relative overflow-hidden group">
-                <div class="absolute right-0 top-0 p-4 opacity-10"><i data-lucide="dumbbell" class="w-20 h-20 text-blue-500"></i></div>
-                <span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Academy</span>
-                <h2 class="text-2xl font-black">Entrenar</h2>
-            </button>
-        </div>
-        
-        <button onclick="localStorage.clear(); location.reload()" class="mt-12 text-xs text-red-500 underline w-full text-center opacity-50">Resetear Todo (Fábrica)</button>
-    </div>
-
-    <div id="setupScreen" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6">
-        <div class="flex justify-between mb-6"><button onclick="goHome()" class="p-2 rounded-full card"><i data-lucide="arrow-left"></i></button></div>
-        <h1 class="text-3xl font-black text-center mb-6">CONFIGURACIÓN</h1>
-        <div class="flex gap-3 mb-4">
-            <div class="card p-4 rounded-3xl flex-1 border-t-4 border-emerald-500"><label class="block text-[9px] font-bold opacity-50 mb-1 text-center">HCP REAL</label><input type="number" id="handicapRealInput" class="w-full text-3xl p-1 text-center font-black bg-transparent outline-none" placeholder="24"></div>
-            <div class="card p-4 rounded-3xl flex-1 border-t-4 border-amber-500"><label class="block text-[9px] font-bold opacity-50 mb-1 text-center">HCP RETO</label><input type="number" id="handicapTargetInput" class="w-full text-3xl p-1 text-center font-black bg-transparent outline-none" placeholder="18"></div>
-        </div>
-        <button onclick="startNewGame()" class="w-full bg-emerald-600 text-white text-lg font-bold py-5 rounded-3xl mt-auto">AL TEE DEL 1</button>
-    </div>
-
-    <div id="gameScreen" class="hidden h-full flex-col relative z-[55]">
-        <div class="bg-emerald-900/20 pt-4 pb-2 px-5 rounded-b-[2rem]">
-            <div class="flex justify-between items-start mb-3">
-                <div><h2 class="text-3xl font-black" id="holeDisplay">Hoyo 1</h2><div class="flex gap-2 mt-1"><span class="text-[10px] bg-white/10 px-2 py-0.5 rounded font-bold">PAR <span id="parDisplay">4</span></span><span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-bold">STB: <span id="stablefordDisplay">0</span></span></div></div>
-                <button onclick="finishRoundNow()" class="text-[9px] font-bold bg-red-500/20 text-red-300 px-3 py-1 rounded-full border border-red-500/30">FIN</button>
-            </div>
-            <div class="flex justify-between items-end bg-black/40 p-3 rounded-2xl border border-white/5">
-                <div class="text-center"><span class="text-[9px] text-emerald-500 font-black block">PAR NETO</span><span class="text-2xl font-black text-emerald-500" id="displayPersonalPar">0</span></div>
-                <div class="text-center"><span class="text-[9px] opacity-50 font-bold block">TOTAL</span><span class="text-2xl font-black" id="runningScoreDisplay">0</span></div>
-            </div>
-        </div>
-
-        <div id="checklistContainer" class="flex-1 overflow-y-auto p-4 space-y-3 pb-48"></div>
-
-        <button onclick="toggleGPS()" id="gpsBtn" class="fixed right-6 bottom-32 z-50 bg-blue-600 text-white p-4 rounded-full shadow-2xl"><i data-lucide="satellite" class="w-6 h-6"></i></button>
-        <div id="gpsPanel" class="hidden fixed inset-x-6 bottom-48 bg-black/90 backdrop-blur border border-blue-500/30 p-5 rounded-3xl z-50 text-center">
-            <h3 class="text-5xl font-black text-white mb-2" id="gpsDistance">0<span class="text-lg opacity-50">m</span></h3>
-            <p id="gpsStatus" class="text-xs opacity-50 mb-4">Calculando...</p>
-            <button onclick="toggleGPS()" class="bg-slate-800 px-6 py-2 rounded-xl text-xs font-bold">Cerrar</button>
-        </div>
-
-        <div class="bg-black border-t border-white/10 absolute bottom-0 left-0 right-0 z-30 pb-8 pt-3 rounded-t-[2rem]">
-            <div class="flex justify-center gap-8 py-2 mb-2">
-                <button onclick="setMood('calm')" id="mood-calm" class="text-3xl opacity-30 hover:opacity-100 transition-opacity">🙂</button>
-                <button onclick="setMood('normal')" id="mood-normal" class="text-3xl opacity-30 hover:opacity-100 transition-opacity">😐</button>
-                <button onclick="setMood('angry')" id="mood-angry" class="text-3xl opacity-30 hover:opacity-100 transition-opacity">😡</button>
-            </div>
-            <div class="px-5 flex items-center gap-3">
-                <button onclick="prevHole()" class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center"><i data-lucide="arrow-left"></i></button>
-                <div class="flex-1 flex justify-between items-center bg-slate-800 h-12 rounded-xl px-2">
-                    <button onclick="adjustScore(-1)" class="w-10 h-10 text-xl font-bold">-</button>
-                    <span id="currentHoleScore" class="text-3xl font-black">4</span>
-                    <button onclick="adjustScore(1)" class="w-10 h-10 text-xl font-bold bg-emerald-600 rounded-lg">+</button>
+        <div id="resumeContainer" class="hidden flex gap-3 mb-6 animate-fade-in-up">
+            <button onclick="resumeGame()" class="flex-1 bg-gradient-to-r from-emerald-900 to-emerald-950 border border-emerald-700/50 p-5 rounded-[2rem] text-left relative overflow-hidden shadow-lg group">
+                <div class="relative z-10 flex justify-between items-center">
+                    <div>
+                        <span class="bg-emerald-500 text-black px-2 py-0.5 rounded text-[9px] font-black uppercase mb-1 inline-block">EN CURSO</span>
+                        <h2 class="text-lg font-black text-white">Continuar</h2>
+                    </div>
+                    <div class="bg-emerald-500 rounded-full p-2 text-black"><i data-lucide="play" class="w-5 h-5 fill-current"></i></div>
                 </div>
-                <button onclick="nextHole()" class="px-6 h-12 bg-white text-black font-bold rounded-xl flex items-center gap-2 text-xs">SIGUIENTE <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+            </button>
+            <button onclick="discardSavedGame()" class="w-20 bg-red-900/10 border border-red-900/30 rounded-[2rem] flex flex-col items-center justify-center text-red-400 hover:bg-red-900/30 transition-colors">
+                <i data-lucide="trash-2" class="w-6 h-6 mb-1"></i>
+                <span class="text-[9px] font-bold uppercase">Borrar</span>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 mb-6">
+            <button onclick="goToSetup()" class="card p-6 rounded-[2rem] text-left relative overflow-hidden group hover:border-emerald-500 transition-all">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="flag" class="w-20 h-20 text-emerald-500"></i></div>
+                <div class="relative z-10">
+                    <span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Nueva Partida</span>
+                    <h2 class="text-2xl font-black text-white mb-0.5">Jugar Vuelta</h2>
+                    <p class="text-xs text-slate-400">18 hoyos, Stroke Play y AI.</p>
+                </div>
+            </button>
+            <button onclick="goToTrainingHub()" class="card p-6 rounded-[2rem] text-left relative overflow-hidden group hover:border-blue-500 transition-all">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="dumbbell" class="w-20 h-20 text-blue-500"></i></div>
+                <div class="relative z-10">
+                    <span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-[9px] font-black uppercase mb-2 inline-block">Academy</span>
+                    <h2 class="text-2xl font-black text-white mb-0.5">Entrenar</h2>
+                    <p class="text-xs text-slate-400">Golf & Gym.</p>
+                </div>
+            </button>
+        </div>
+
+        <div class="card p-4 rounded-3xl flex justify-between items-center">
+            <div><p class="text-[10px] font-bold text-slate-500 uppercase">Nivel Caddie</p><p class="text-lg font-black text-white" id="xpLevel">Novato</p></div>
+            <div class="text-right"><p class="text-[10px] font-bold text-slate-500 uppercase">XP Total</p><p class="text-xl font-black text-yellow-400" id="xpTotal">0</p></div>
+        </div>
+    </div>
+
+    <div id="setupScreen" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6 relative">
+        <div class="flex justify-between items-center mb-6"><button onclick="goHome()" class="p-2 rounded-full card"><i data-lucide="arrow-left"></i></button><button onclick="toggleTheme()" class="p-2 rounded-full card">☀️</button></div>
+        <div class="text-center mt-2 mb-6"><h1 class="text-3xl font-black text-white tracking-tight">NUEVA VUELTA</h1><p class="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-wider">Configuración</p></div>
+        <button onclick="showHistory()" class="w-full card py-4 rounded-3xl mb-4 relative overflow-hidden group active:scale-[0.98] flex items-center justify-between px-6">
+            <div class="flex items-center gap-4"><div class="bg-indigo-500/20 p-2 rounded-xl text-indigo-400"><i data-lucide="trending-up" class="w-5 h-5"></i></div><div class="text-left"><span class="block text-base font-black">Mi Evolución</span><span class="text-[10px] opacity-50">Ver gráficas</span></div></div><i data-lucide="chevron-right" class="opacity-30"></i>
+        </button>
+         <div class="flex gap-3 mb-4">
+            <div class="card p-4 rounded-3xl flex-1 border-t-4 border-emerald-500">
+                <label class="block text-[9px] font-bold opacity-50 mb-1 uppercase tracking-wider text-center">HCP REAL</label>
+                <input type="number" id="handicapRealInput" step="0.1" class="w-full text-3xl p-1 text-center font-black bg-transparent outline-none focus:text-emerald-400" placeholder="24.9">
+                <p id="realPlayingHcpDisplay" class="text-center text-[9px] text-emerald-500 font-bold mt-1 h-3">Juegas: --</p>
+            </div>
+            <div class="card p-4 rounded-3xl flex-1 border-t-4 border-amber-500">
+                <label class="block text-[9px] font-bold text-amber-500/80 mb-1 uppercase tracking-wider text-center">HCP RETO</label>
+                <input type="number" id="handicapTargetInput" step="0.1" class="w-full text-3xl p-1 text-center font-black bg-transparent outline-none text-amber-500 placeholder-amber-500/30" placeholder="18.0">
+            </div>
+        </div>
+        <div class="card p-4 rounded-3xl mb-6">
+            <div class="grid grid-cols-1 gap-2">
+                <button onclick="setMode(1, 18, this)" class="mode-btn selected w-full py-3 rounded-2xl font-bold text-base">18 Hoyos</button>
+                <div class="grid grid-cols-2 gap-2"><button onclick="setMode(1, 9, this)" class="mode-btn w-full py-3 rounded-2xl font-bold">9 Ida</button><button onclick="setMode(10, 18, this)" class="mode-btn w-full py-3 rounded-2xl font-bold">9 Vuelta</button></div>
+            </div>
+        </div>
+        <button id="startRoundBtn" onclick="startNewGame()" class="w-full bg-emerald-600 text-white text-lg font-bold py-5 rounded-3xl shadow-lg mt-auto hover:bg-emerald-500 transition-all">AL TEE DEL 1</button>
+    </div>
+
+    <div id="trainingHub" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6 relative">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="goHome()" class="p-2 rounded-full card"><i data-lucide="arrow-left"></i></button>
+            <div class="flex gap-4">
+                <button onclick="switchTrainingTab('golf')" id="tab-golf" class="tab-btn active text-sm font-bold pb-1 tracking-widest uppercase">Golf</button>
+                <button onclick="switchTrainingTab('gym')" id="tab-gym" class="tab-btn text-sm font-bold pb-1 tracking-widest uppercase">Gym</button>
+            </div>
+            <div class="w-8"></div>
+        </div>
+
+        <div id="golfTrainingContent" class="block animate-fade-in-up">
+            <div class="card p-6 rounded-[2rem] mb-6 border-t-4 border-blue-500 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="brain-circuit" class="w-20 h-20 text-blue-500"></i></div>
+                <p class="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-2">RECOMENDACIÓN AI</p>
+                <h2 class="text-2xl font-black text-white mb-2" id="trainingFocusTitle">Cargando...</h2>
+                <p class="text-xs text-slate-400 mb-6" id="trainingFocusReason">Analizando...</p>
+                <button onclick="startTrainingSession('golf')" class="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-blue-500 transition-colors flex items-center justify-center gap-2"><i data-lucide="play"></i> EMPEZAR</button>
+            </div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Sesiones Técnicas</p>
+            <div class="space-y-3">
+                <button onclick="forceTraining('putt')" class="w-full card p-4 rounded-2xl flex items-center justify-between group"><div class="flex items-center gap-3"><div class="bg-emerald-500/20 p-2 rounded-xl text-emerald-400"><i data-lucide="crosshair" class="w-5 h-5"></i></div><span class="font-bold text-sm">Solo Putt</span></div><i data-lucide="chevron-right" class="opacity-30"></i></button>
+                <button onclick="forceTraining('short')" class="w-full card p-4 rounded-2xl flex items-center justify-between group"><div class="flex items-center gap-3"><div class="bg-orange-500/20 p-2 rounded-xl text-orange-400"><i data-lucide="layers" class="w-5 h-5"></i></div><span class="font-bold text-sm">Juego Corto</span></div><i data-lucide="chevron-right" class="opacity-30"></i></button>
+                 <button onclick="forceTraining('long')" class="w-full card p-4 rounded-2xl flex items-center justify-between group"><div class="flex items-center gap-3"><div class="bg-blue-500/20 p-2 rounded-xl text-blue-400"><i data-lucide="move-up-right" class="w-5 h-5"></i></div><span class="font-bold text-sm">Juego Largo</span></div><i data-lucide="chevron-right" class="opacity-30"></i></button>
+            </div>
+        </div>
+
+        <div id="gymTrainingContent" class="hidden animate-fade-in-up">
+            <div class="card p-6 rounded-[2rem] mb-6 bg-gradient-to-br from-violet-900/40 to-slate-900 border border-violet-500/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="dumbbell" class="w-20 h-20 text-violet-400"></i></div>
+                <h2 class="text-2xl font-black text-white mb-1">Golf Fitness</h2>
+                <p class="text-xs text-violet-200 mb-4">Potencia, Movilidad y Conexión.</p>
+                <div class="flex gap-2">
+                    <button onclick="startGymSession('warmup')" class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg text-[9px] font-bold uppercase text-white transition-colors">🔥 Calentamiento</button>
+                </div>
+            </div>
+            
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Rutina Semanal</p>
+            <div class="space-y-3">
+                <button onclick="startGymSession('day1')" class="w-full card p-4 rounded-2xl flex items-center justify-between group border-l-4 border-l-violet-500">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-violet-500/20 p-2 rounded-xl text-violet-400"><span class="font-black text-sm">D1</span></div>
+                        <div class="text-left"><span class="font-bold text-sm block">Fuerza & Estabilidad</span><span class="text-[10px] opacity-50 uppercase">Tren Inferior + Vertical</span></div>
+                    </div>
+                    <i data-lucide="chevron-right" class="opacity-30"></i>
+                </button>
+                <button onclick="startGymSession('day2')" class="w-full card p-4 rounded-2xl flex items-center justify-between group border-l-4 border-l-pink-500">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-pink-500/20 p-2 rounded-xl text-pink-400"><span class="font-black text-sm">D2</span></div>
+                        <div class="text-left"><span class="font-bold text-sm block">Potencia Rotacional</span><span class="text-[10px] opacity-50 uppercase">Giro + Empuje</span></div>
+                    </div>
+                    <i data-lucide="chevron-right" class="opacity-30"></i>
+                </button>
+                <button onclick="startGymSession('day3')" class="w-full card p-4 rounded-2xl flex items-center justify-between group border-l-4 border-l-cyan-500">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-cyan-500/20 p-2 rounded-xl text-cyan-400"><span class="font-black text-sm">D3</span></div>
+                        <div class="text-left"><span class="font-bold text-sm block">Conexión Total</span><span class="text-[10px] opacity-50 uppercase">Kettlebell + Core</span></div>
+                    </div>
+                    <i data-lucide="chevron-right" class="opacity-30"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="summaryScreen" class="hidden absolute inset-0 bg-black z-[60] flex flex-col overflow-y-auto p-6">
-        <h1 class="text-3xl font-black text-center mt-10 mb-8">RESUMEN</h1>
-        <div class="flex justify-center gap-10 text-center mb-8">
-            <div><span class="text-6xl font-black" id="finalGross">--</span><p class="text-xs font-bold opacity-50">GROSS</p></div>
-            <div><span class="text-6xl font-black text-indigo-400" id="finalStableford">--</span><p class="text-xs font-bold text-indigo-400">STB PTS</p></div>
+    <div id="activeTrainingScreen" class="hidden flex-col h-full bg-[var(--bg-body)] z-[60]">
+        <div class="p-6 pb-2 border-b border-white/5">
+            <div class="flex justify-between items-start">
+                <div><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">EN CURSO</p><h2 class="text-xl font-black text-white" id="sessionTitle">Entrenamiento</h2></div>
+                <div class="text-right"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TIEMPO</p><p class="text-2xl font-black text-blue-400 font-mono" id="sessionTimer">00:00</p></div>
+            </div>
         </div>
-        <button onclick="hardReset()" class="mt-auto w-full py-4 text-red-500 font-bold text-xs uppercase tracking-widest border border-red-900/30 rounded-xl">Cerrar y Volver</button>
+        <div class="flex-1 overflow-y-auto p-6 space-y-3" id="drillsContainer"></div>
+        <div class="p-6 border-t border-white/5"><button onclick="finishTraining()" class="w-full bg-white text-slate-900 font-bold py-4 rounded-3xl shadow-xl flex items-center justify-center gap-2 hover:bg-slate-200"><i data-lucide="check-circle"></i> GUARDAR</button></div>
     </div>
 
-    <div id="trainingHub" class="hidden flex-1 flex flex-col z-50 overflow-y-auto p-6">
-        <div class="flex justify-between mb-6"><button onclick="goHome()" class="p-2 rounded-full card"><i data-lucide="arrow-left"></i></button><div class="flex gap-4"><button onclick="switchTab('golf')" class="text-sm font-bold text-emerald-500">GOLF</button><button onclick="switchTab('gym')" class="text-sm font-bold text-slate-500">GYM</button></div><div></div></div>
+    <div id="gameScreen" class="hidden h-full flex-col relative bg-[var(--bg-body)] z-[55]">
+        <div class="bg-gradient-to-b from-emerald-900/50 to-transparent pt-4 pb-2 px-5 z-20 rounded-b-[2rem]">
+           <div class="flex justify-between items-start mb-3">
+               <div><h2 class="text-3xl font-black text-white leading-none tracking-tight" id="holeDisplay">Hoyo 1</h2><div class="flex items-center gap-2 mt-2"><span class="bg-white/10 border border-white/20 px-2 py-0.5 rounded text-[9px] text-emerald-200 font-bold uppercase backdrop-blur-md">Par <span id="parDisplay" class="text-white">4</span></span><span class="bg-amber-500/10 border border-amber-500/40 px-2 py-0.5 rounded text-[9px] text-amber-200 font-bold uppercase backdrop-blur-md">Reto <span id="displayTargetHcp">18</span></span></div></div>
+               <button onclick="finishRoundNow()" class="bg-red-500/20 text-red-200 text-[9px] font-bold uppercase px-3 py-1.5 rounded-full border border-red-500/30 backdrop-blur-md flex items-center gap-1 active:scale-95 transition-transform"><i data-lucide="flag" class="w-3 h-3"></i> Fin</button>
+           </div>
+           
+           <div class="flex justify-between items-end mt-2 bg-slate-900/60 p-3 rounded-2xl backdrop-blur-md border border-white/10 shadow-lg">
+               <div class="flex flex-col"><span class="text-[9px] text-amber-500 uppercase font-black tracking-widest mb-0.5">OBJETIVO (HOYO)</span><span class="text-2xl font-black text-amber-500 leading-none" id="displayTargetStrokes">0</span><span class="text-[8px] opacity-40 uppercase">GOLPES</span></div>
+               <div class="h-6 w-px bg-white/10"></div>
+               <div class="flex flex-col items-center"><span class="text-[9px] text-emerald-400 uppercase font-black tracking-widest mb-0.5">TU PAR (HOYO)</span><span class="text-2xl font-black text-emerald-400 leading-none" id="displayPersonalPar">0</span><span class="text-[8px] opacity-40 uppercase">GOLPES</span></div>
+               <div class="h-6 w-px bg-white/10"></div>
+               <div class="flex flex-col items-end"><span class="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">TOTAL (VUELTA)</span><span class="text-2xl font-black text-white leading-none" id="runningScoreDisplay">0</span><span class="text-[8px] opacity-40 uppercase">GOLPES</span></div>
+           </div>
+           
+           <div class="mt-4 h-1 bg-slate-800 rounded-full overflow-hidden"><div id="progressBar" class="h-full bg-emerald-500 shadow-[0_0_10px_#10b981] transition-all duration-500" style="width: 0%"></div></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 pb-48" id="checklistContainer"></div>
+
+        <div class="glass-panel absolute bottom-0 left-0 right-0 z-30 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[1.5rem]">
+            <div class="flex justify-center items-center gap-8 py-2 border-b border-white/5">
+                <button onclick="setMood('calm')" id="mood-calm" class="mood-btn text-3xl">🙂</button>
+                <button onclick="setMood('normal')" id="mood-normal" class="mood-btn text-3xl">😐</button>
+                <button onclick="setMood('angry')" id="mood-angry" class="mood-btn text-3xl">😡</button>
+            </div>
+            <div class="px-4 pb-4 pt-3 flex items-center gap-3">
+                <button onclick="prevHole()" class="w-12 h-12 bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center border border-white/5 active:bg-slate-700"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <div class="flex-1 flex items-center justify-between bg-slate-800 h-12 rounded-xl px-2 border border-white/5 relative">
+                    <button onclick="adjustScore(-1)" class="w-9 h-9 bg-white/5 rounded-lg text-lg text-white flex items-center justify-center hover:bg-white/10">-</button>
+                    <span id="currentHoleScore" class="text-3xl font-black text-white w-10 text-center leading-none tracking-tighter">5</span>
+                    <button onclick="adjustScore(1)" class="w-9 h-9 bg-emerald-600 rounded-lg text-lg shadow-lg shadow-emerald-900/50 text-white flex items-center justify-center hover:bg-emerald-500">+</button>
+                </div>
+                <button onclick="nextHole()" class="w-auto px-5 h-12 bg-white text-slate-900 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95"><span id="nextButtonText">SIGUIENTE</span> <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+            </div>
+            <div class="h-2"></div>
+        </div>
+    </div>
+
+    <div id="mindsetScreen" onclick="finishTransition()" class="hidden fixed inset-0 z-[90] bg-slate-950 flex-col items-center justify-center p-8 text-center cursor-pointer">
+        <div id="mindsetIcon" class="mb-6"></div>
+        <h2 id="mindsetTitle" class="text-3xl font-black text-white mb-6 animate-msg"></h2>
+        <p id="mindsetBody" class="text-lg text-slate-400 font-medium leading-relaxed animate-msg" style="animation-delay: 0.3s; opacity: 0;"></p>
+        <p class="absolute bottom-10 text-[10px] text-slate-600 uppercase tracking-widest animate-pulse">FairWay Caddie AI</p>
+    </div>
+
+    <div id="summaryScreen" class="hidden absolute inset-0 bg-[var(--bg-body)] z-[60] flex flex-col overflow-y-auto">
+        <div class="bg-slate-900 p-8 pb-10 rounded-b-[3rem] text-center text-white shadow-2xl relative overflow-hidden border-b border-white/5">
+            <div class="absolute inset-0 bg-emerald-900/20 blur-3xl"></div>
+            <div class="relative z-10">
+                <h2 class="text-3xl font-black mb-1">Tarjeta Final</h2>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-4" id="holesPlayedText">18 Hoyos</p>
+                <div class="text-center">
+                    <span class="text-6xl font-black text-white drop-shadow-lg tracking-tight" id="finalGross">--/--</span>
+                    <p class="text-[10px] text-emerald-400 font-bold uppercase mt-2">Gross / Par</p>
+                </div>
+            </div>
+        </div>
         
-        <div id="golfContent">
-            <div class="card p-6 rounded-[2rem] mb-4 border-t-4 border-blue-500"><h2 class="text-xl font-black mb-2">Entreno Técnico</h2>
-                <button onclick="startTrainingSession('putt')" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-sm mb-2">Putt</button>
-                <button onclick="startTrainingSession('short')" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-sm mb-2">Juego Corto</button>
+        <div class="px-6 -mt-8 relative z-20 flex gap-3">
+            <div class="flex-1 card p-4 rounded-3xl shadow-xl border-t-2 border-amber-500 text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-1 opacity-10"><i data-lucide="target" class="w-12 h-12 text-amber-500"></i></div>
+                <p class="text-[9px] text-amber-500 font-black uppercase tracking-wider mb-1">OBJETIVO</p>
+                <p class="text-4xl font-black text-amber-500 leading-none" id="resTargetPts">--</p>
+                <p class="text-[9px] opacity-50 font-bold uppercase mt-1">Golpes</p>
+            </div>
+            <div class="flex-1 card p-4 rounded-3xl shadow-xl border-t-2 border-emerald-500 text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-1 opacity-10"><i data-lucide="user" class="w-12 h-12 text-emerald-500"></i></div>
+                <p class="text-[9px] text-emerald-500 font-black uppercase tracking-wider mb-1">REAL</p>
+                <p class="text-4xl font-black text-emerald-500 leading-none" id="resRealPts">--</p>
+                <p class="text-[9px] opacity-50 font-bold uppercase mt-1">Golpes</p>
             </div>
         </div>
-
-        <div id="gymContent" class="hidden">
-            <div class="card p-6 rounded-[2rem] mb-4 border-t-4 border-violet-500"><h2 class="text-xl font-black mb-2">Gimnasio</h2>
-                <button onclick="startGymSession('warmup')" class="w-full bg-violet-900/50 py-3 rounded-xl font-bold text-sm mb-2 border border-violet-500/30">🔥 Calentamiento</button>
-                <button onclick="startGymSession('day1')" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-sm mb-2">Día 1: Fuerza</button>
-                <button onclick="startGymSession('day2')" class="w-full bg-slate-800 py-3 rounded-xl font-bold text-sm mb-2">Día 2: Potencia</button>
+        
+        <div class="mt-6 px-6 pb-12 space-y-6 flex-1">
+            <div id="finalVerdictDisplay"></div>
+            <div class="card p-6 rounded-3xl border-l-4 border-indigo-500 bg-indigo-900/10">
+                 <div class="flex gap-3">
+                     <div class="mt-1"><i data-lucide="quote" class="w-5 h-5 text-indigo-400 fill-current"></i></div>
+                     <div id="challengeMsg" class="text-sm font-medium italic text-indigo-100 leading-relaxed"></div>
+                 </div>
             </div>
+            <div><p class="text-xs font-bold opacity-40 uppercase tracking-widest mb-3">Timeline</p><div id="visualRoundSummary" class="flex gap-2 overflow-x-auto hide-scroll pb-2"></div></div>
+            <button onclick="openStats()" class="w-full card p-5 rounded-3xl flex items-center justify-between group"><div class="flex items-center gap-4"><div class="bg-blue-500/20 p-3 rounded-2xl text-blue-400"><i data-lucide="pie-chart" class="w-6 h-6"></i></div><div class="text-left"><p class="font-bold">Análisis Errores</p><p class="text-xs opacity-50">¿Dónde fallaste?</p></div></div><i data-lucide="chevron-right" class="opacity-30"></i></button>
+            <button onclick="saveAndFinish()" class="w-full bg-white text-slate-900 font-bold py-5 rounded-3xl shadow-xl mt-2 flex items-center justify-center gap-2 hover:bg-slate-200"><i data-lucide="save" class="w-5 h-5"></i> GUARDAR</button>
+            <button onclick="hardReset()" class="w-full py-4 text-xs font-bold text-red-400 uppercase tracking-wider opacity-60 hover:opacity-100">Descartar Resultado</button>
         </div>
     </div>
 
-    <div id="activeTrainingScreen" class="hidden flex-col h-full bg-black z-[70] p-6">
-        <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-black" id="sessionTitle">Entreno</h2><button onclick="finishTraining()" class="text-xs font-bold bg-white text-black px-4 py-2 rounded-full">Terminar</button></div>
-        <div id="drillsContainer" class="space-y-4 overflow-y-auto flex-1 pb-10"></div>
-    </div>
+    <div id="statsScreen" class="hidden absolute inset-0 bg-[var(--bg-body)] z-[70] flex flex-col h-full overflow-y-auto"><div class="glass-panel p-5 sticky top-0 z-10 flex justify-between items-center"><h2 class="text-xl font-black">Análisis</h2><button onclick="closeOverlay('statsScreen')" class="p-2 rounded-full card"><i data-lucide="x"></i></button></div><div class="p-6 space-y-6"><div><p class="text-xs font-bold opacity-50 uppercase tracking-widest mb-3">Distribución de Fallos</p><div class="h-6 w-full bg-slate-800 rounded-full overflow-hidden flex" id="failureDistributionBar"></div><div class="flex justify-between text-[9px] font-bold opacity-60 mt-2 uppercase tracking-wide"><span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Largo</span><span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-orange-400"></div> Corto</span><span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Putt</span></div></div><div class="grid grid-cols-1 gap-4" id="failureCards"></div><div class="card p-5 rounded-3xl border-l-4 border-indigo-500 text-sm space-y-2"><h3 class="text-indigo-400 font-black flex items-center gap-2"><i data-lucide="brain-circuit" class="w-5 h-5"></i> Coach AI</h3><div id="coachRecommendations" class="opacity-80 leading-relaxed"></div></div></div></div>
+
+    <div id="historyScreen" class="hidden absolute inset-0 bg-[var(--bg-body)] z-[80] flex flex-col overflow-y-auto"><div class="glass-panel p-5 sticky top-0 z-10 flex justify-between items-center"><div><h2 class="text-2xl font-black tracking-tight">Evolución</h2><p class="text-xs opacity-50 font-bold uppercase">Tu progreso</p></div><button onclick="closeHistory()" class="p-2 rounded-full card"><i data-lucide="x"></i></button></div><div class="p-5 space-y-6"><div class="card p-5 rounded-3xl relative overflow-hidden"><div class="flex justify-between items-end mb-4 relative z-10"><div><p class="text-[10px] opacity-50 font-bold uppercase tracking-widest">Tendencia</p><p class="text-xs opacity-50 mt-1">Golpes Brutos</p></div><div class="text-right"><p class="text-2xl font-black" id="histBestGross">--</p><p class="text-[9px] opacity-50 font-bold uppercase">Mejor Vuelta</p></div></div><div id="chartContainer" class="h-40 w-full flex items-end justify-center text-xs opacity-30 bg-white/5 rounded-xl">Juega 2+ partidas...</div></div><div id="historyList" class="space-y-3 pb-8"></div><button onclick="clearHistory()" class="text-red-400 text-[10px] font-bold w-full py-6 uppercase tracking-widest opacity-60">Resetear Historial</button></div></div>
 
     <script>
-        // --- GESTIÓN DE ERRORES GLOBAL ---
-        window.onerror = function(msg, url, line) {
-            alert("⚠️ Error detectado: " + msg + "\nLínea: " + line + "\nSe forzará el inicio.");
-            document.getElementById('splashScreen').style.display = 'none';
-            return false;
-        };
+        const courseData = [ { h: 1, p: 4, si: 15 }, { h: 2, p: 4, si: 17 }, { h: 3, p: 4, si: 3 }, { h: 4, p: 4, si: 13 }, { h: 5, p: 3, si: 9 }, { h: 6, p: 5, si: 1 }, { h: 7, p: 4, si: 7 }, { h: 8, p: 3, si: 11 }, { h: 9, p: 5, si: 5 }, { h: 10, p: 3, si: 18 }, { h: 11, p: 5, si: 2 }, { h: 12, p: 4, si: 12 }, { h: 13, p: 4, si: 6 }, { h: 14, p: 4, si: 14 }, { h: 15, p: 5, si: 8 }, { h: 16, p: 4, si: 10 }, { h: 17, p: 3, si: 16 }, { h: 18, p: 4, si: 4 } ];
+        let currentHole = 1, startHoleLimit = 1, endHoleLimit = 18;
+        let hcpRealExact = 24.9, hcpTargetExact = 18.0; 
+        let currentShots = [], currentInputScore = 0, currentMood = null, roundData = {}, gameHistory = [], trainingData = { xp: 0, sessions: [] };
+        let trainingTimerInterval = null, trainingSeconds = 0;
 
-        const courseData = Array(18).fill(null).map((_, i) => ({ h: i+1, p: (i%2===0?4: (i%3===0?3:5)), si: 18-i })); 
-        let currentHole = 1, startHoleLimit = 1, endHoleLimit = 18, hcpReal = 24, hcpTarget = 18;
-        let roundData = {}, currentShots = [], currentScore = 0, currentMood = 'normal';
-        let gpsWatch = null, gpsStart = null;
-
-        // IMÁGENES
-        const gymDrills = {
-            warmup: [ {n:"Gato-Vaca", i:"calentamiento.png"}, {n:"Open Books", i:"calentamiento.png"} ],
-            day1: [ {n:"Box Jumps", i:"dia1.png"}, {n:"Slams", i:"dia1.png"}, {n:"Sentadilla Búlgara", i:"dia1_2.png"} ],
-            day2: [ {n:"Lanzamiento", i:"dia2.png"}, {n:"Hachazos", i:"dia2.png"}, {n:"Press Pecho", i:"dia2_2.png"} ]
-        };
-        const golfDrills = {
-            putt: [ {n:"10 Putts 1m", xp:50}, {n:"Reloj", xp:100} ],
-            short: [ {n:"20 Chips", xp:100}, {n:"Bunker", xp:150} ]
-        };
-
-        window.onload = () => {
-            try {
-                if(typeof lucide !== 'undefined') lucide.createIcons();
-                setTimeout(() => { document.getElementById('splashScreen').style.display = 'none'; }, 2000);
-                checkSaved();
-            } catch(e) {
-                console.error(e);
-                alert("Error al iniciar: " + e.message);
-                document.getElementById('splashScreen').style.display = 'none';
-            }
-        };
-
-        function checkSaved() {
-            try {
-                const s = JSON.parse(localStorage.getItem('golfState_v48'));
-                if(s && s.roundData) {
-                    document.getElementById('resumeContainer').classList.remove('hidden');
-                    document.getElementById('resumeContainer').classList.add('flex');
-                }
-            } catch(e) { localStorage.removeItem('golfState_v48'); }
-        }
-
-        function goHome() { 
-            ['setupScreen','gameScreen','summaryScreen','trainingHub','activeTrainingScreen'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.getElementById('homeScreen').classList.remove('hidden'); 
-        }
-
-        function startNewGame() {
-            hcpReal = parseFloat(document.getElementById('handicapRealInput').value) || 24;
-            hcpTarget = parseFloat(document.getElementById('handicapTargetInput').value) || 18;
-            localStorage.removeItem('golfState_v48'); roundData = {}; 
-            loadHole(1);
-            document.getElementById('setupScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex');
-        }
-
-        function resumeGame() {
-            const s = JSON.parse(localStorage.getItem('golfState_v48'));
-            hcpReal = s.hcpReal; roundData = s.roundData; currentHole = s.currentHole;
-            loadHole(currentHole);
-            document.getElementById('homeScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex');
-        }
-
-        function discardSavedGame() { localStorage.removeItem('golfState_v48'); location.reload(); }
-        function goToSetup() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('setupScreen').classList.remove('hidden'); }
-        function goToTrainingHub() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('trainingHub').classList.remove('hidden'); }
-
-        function loadHole(h) {
-            currentHole = h;
-            const par = courseData[h-1].p;
-            document.getElementById('holeDisplay').innerText = `Hoyo ${h}`;
-            document.getElementById('parDisplay').innerText = par;
-
-            if(roundData[h]) {
-                currentScore = roundData[h].score; currentShots = roundData[h].shots; currentMood = roundData[h].mood || 'normal';
-            } else {
-                const strokes = Math.floor(hcpReal/18) + (courseData[h-1].si <= hcpReal%18 ? 1 : 0);
-                currentScore = par + strokes;
-                currentMood = 'normal';
-                let shots = Array(currentScore).fill("Golpe de Avance");
-                if(currentScore>=1) shots[currentScore-1] = "Meter Putt";
-                if(currentScore>=2) shots[currentScore-2] = "Aproach / Lag Putt";
-                if(currentScore>=4) shots[0] = "Salida";
-                currentShots = shots.map(n => ({name: n, status: 'pending'}));
-            }
-            updateUI();
-        }
-
-        function updateUI() {
-            document.getElementById('currentHoleScore').innerText = currentScore;
-            
-            // STABLEFORD
-            const par = courseData[currentHole-1].p;
-            const strokes = Math.floor(hcpReal/18) + (courseData[currentHole-1].si <= hcpReal%18 ? 1 : 0);
-            const net = currentScore - strokes;
-            const pts = (par - net) + 2;
-            document.getElementById('stablefordDisplay').innerText = pts < 0 ? 0 : pts;
-
-            document.getElementById('displayPersonalPar').innerText = par + strokes;
-            
-            let total = 0;
-            let tempRound = {...roundData}; tempRound[currentHole] = {score: currentScore};
-            for(let k in tempRound) total += tempRound[k].score;
-            document.getElementById('runningScoreDisplay').innerText = total;
-
-            // CHECKLIST
-            const list = document.getElementById('checklistContainer');
-            list.innerHTML = '';
-            currentShots.forEach((s, i) => {
-                const color = s.status === 'success' ? 'bg-emerald-900 border-emerald-500' : (s.status === 'fail' ? 'bg-red-900/20 border-red-900' : 'bg-slate-800 border-slate-700');
-                const html = `
-                <div class="card p-4 rounded-2xl mb-3 ${color}">
-                    <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-black uppercase opacity-50">GOLPE ${i+1}</span></div>
-                    <h3 class="font-bold text-lg mb-3 ${s.status === 'fail' ? 'line-through opacity-50' : ''}">${s.name}</h3>
-                    ${s.status === 'pending' ? 
-                    `<div class="flex gap-2"><button onclick="setShot(${i}, 'success')" class="flex-1 bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs">BIEN</button><button onclick="setShot(${i}, 'fail')" class="flex-1 bg-slate-700 text-red-300 border border-red-900 font-bold py-2 rounded-xl text-xs">FALLO</button></div>` 
-                    : ''}
-                </div>`;
-                list.innerHTML += html;
-            });
-
-            // Moods
-            document.querySelectorAll('#gameScreen button.text-3xl').forEach(b => b.classList.add('opacity-30'));
-            if(currentMood) document.getElementById('mood-'+currentMood)?.classList.remove('opacity-30');
-
-            saveState();
-        }
-
-        function setShot(i, status) {
-            currentShots[i].status = status;
-            if(status === 'fail') currentShots.splice(i+1, 0, {name: "Recuperación", status: 'pending'});
-            updateUI();
-        }
-
-        function adjustScore(d) { currentScore += d; if(currentScore<1) currentScore=1; updateUI(); }
-        function setMood(m) { currentMood = m; updateUI(); }
-        function saveState() { roundData[currentHole] = {score: currentScore, shots: currentShots, mood: currentMood}; localStorage.setItem('golfState_v48', JSON.stringify({hcpReal, roundData, currentHole})); }
+        const drillLibrary = { putt: [ { name: "10 Putts de 1 metro", xp: 50 }, { name: "10 Putts de 2 metros", xp: 100 }, { name: "5 Putts Lag (>10m)", xp: 150 }, { name: "Reloj (3, 6, 9 pies)", xp: 200 } ], short: [ { name: "20 Chips rodados (H8/9)", xp: 100 }, { name: "20 Chips altos (SW)", xp: 150 }, { name: "10 Sacadas de bunker", xp: 200 }, { name: "Up & Down (5 veces)", xp: 250 } ], long: [ { name: "20 Bolas Hierro 7 (Ritmo)", xp: 100 }, { name: "10 Drivers (Calle)", xp: 150 }, { name: "Cambio de objetivo", xp: 150 }, { name: "Rutina completa (5 bolas)", xp: 200 } ] };
         
-        function nextHole() {
-            saveState();
-            if(currentHole < 18) loadHole(currentHole + 1);
-            else finishRoundNow();
-        }
-        function prevHole() { if(currentHole > 1) loadHole(currentHole - 1); }
+        // --- RUTINAS GYM PERSONALIZADAS ---
+        const gymRoutines = {
+            warmup: [
+                { name: "Gato-Vaca", reps: "10 reps", xp: 50, intensity: 20, img: "calentamiento.png", tip: "Mobiliza toda la columna. Despacio." },
+                { name: "Open Books", reps: "8/lado", xp: 50, intensity: 20, img: "calentamiento.png", tip: "Cadera quieta, solo gira el pecho." },
+                { name: "Estiramiento 90/90", reps: "30s/lado", xp: 50, intensity: 30, img: "calentamiento.png", tip: "Clave para rotar sin bloquearse." }
+            ],
+            day1: [
+                { name: "Box Jumps", reps: "3x5", xp: 100, intensity: 90, img: "dia1.png", tip: "Aterriza como un ninja (sin ruido)." },
+                { name: "Med Ball Slams", reps: "3x8", xp: 100, intensity: 85, img: "dia1.png", tip: "Rompe el suelo con el balón." },
+                { name: "Sentadilla Búlgara", reps: "3x8/pierna", xp: 120, intensity: 80, img: "dia1_2.png", tip: "Equilibrio y fuerza. Pecho erguido." },
+                { name: "Pallof Press", reps: "3x15s", xp: 90, intensity: 60, img: "dia1_2.png", tip: "Tus abdominales deben impedir el giro." },
+                { name: "Remo Mancuerna", reps: "3x10", xp: 90, intensity: 70, img: "dia1_2.png", tip: "Arranca la motosierra. Espalda plana." }
+            ],
+            day2: [
+                { name: "Lanzamiento Lateral", reps: "3x6/lado", xp: 100, intensity: 90, img: "dia2.png", tip: "Carga atrás y explota como un swing." },
+                { name: "Press Pecho Mancuerna", reps: "3x10", xp: 100, intensity: 80, img: "dia2_2.png", tip: "Rango completo de movimiento." },
+                { name: "Peso Muerto Rumano", reps: "3x10", xp: 110, intensity: 80, img: "dia2_2.png", tip: "Siente los isquios. Espalda recta." },
+                { name: "Hachazos (Woodchops)", reps: "3x10/lado", xp: 90, intensity: 70, img: "dia2.png", tip: "Gira el torso, controla el regreso." }
+            ],
+            day3: [
+                { name: "Kettlebell Swings", reps: "3x15", xp: 120, intensity: 90, img: "dia3.png", tip: "Caderazo. La pesa flota por los glúteos." },
+                { name: "Landmine Press", reps: "3x10/brazo", xp: 100, intensity: 75, img: "dia3_2.png", tip: "Inclínate un poco hacia la barra." },
+                { name: "Jalón al Pecho", reps: "3x12", xp: 90, intensity: 70, img: "dia3_2.png", tip: "Codos a los bolsillos traseros." },
+                { name: "Deadbug", reps: "3x20", xp: 80, intensity: 60, img: "dia3.png", tip: "Espalda baja pegada al suelo SIEMPRE." }
+            ]
+        };
 
-        function finishRoundNow() {
-            let gross = 0, stb = 0;
-            for(let i=1; i<=18; i++) {
-                if(roundData[i]) {
-                    gross += roundData[i].score;
-                    const par = courseData[i-1].p;
-                    const strokes = Math.floor(hcpReal/18) + (courseData[i-1].si <= hcpReal%18 ? 1 : 0);
-                    let pts = (par - (roundData[i].score - strokes)) + 2;
-                    if(pts<0) pts=0;
-                    stb += pts;
-                }
+        const legendQuotes = {
+            great: [ "Cuanto más entreno, más suerte tengo. – Gary Player", "El éxito en este juego depende menos de la fuerza del cuerpo que de la fuerza de la mente. – Arnold Palmer", "El golf es el deporte más grande porque es un deporte de uno mismo. – Tiger Woods" ],
+            good: [ "El golpe más importante en el golf es el siguiente. – Ben Hogan", "El golf es un compromiso entre lo que tu ego quiere que hagas y lo que tu experiencia te dice que hagas. – Robert Trent Jones", "La concentración es un antídoto contra la ansiedad. – Jack Nicklaus" ],
+            tough: [ "El golf no es un juego de aciertos. Es un juego de fallos. Gana quien falla mejor. – Ben Hogan", "Nunca aprendí nada de un torneo que gané. – Bobby Jones", "El golf te humilla para enseñarte a levantarte. – Arnold Palmer" ]
+        };
+
+        window.onload = function() {
+            lucide.createIcons();
+            setTimeout(() => { document.getElementById('splashScreen').style.opacity = '0'; setTimeout(() => { document.getElementById('splashScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }, 1000); }, 2000);
+            document.getElementById('handicapRealInput').addEventListener('input', function(e) { const val = parseFloat(e.target.value); if(!isNaN(val)) document.getElementById('realPlayingHcpDisplay').innerText = `Juegas con: ${Math.round(val)} golpes`; });
+            if(localStorage.getItem('golfAppHistory')) gameHistory = JSON.parse(localStorage.getItem('golfAppHistory'));
+            if(localStorage.getItem('golfAppTraining')) trainingData = JSON.parse(localStorage.getItem('golfAppTraining'));
+            updateXPDisplay();
+            checkSavedGame();
+        };
+
+        function checkSavedGame() {
+            const savedState = localStorage.getItem('golfAppState_v42');
+            if (savedState) { 
+                document.getElementById('resumeContainer').classList.remove('hidden'); 
+                document.getElementById('resumeContainer').classList.add('flex'); 
+                const s = JSON.parse(savedState);
+                if(s.startHoleLimit === 10) document.getElementById('startRoundBtn').innerText = "AL TEE DEL 10";
+            } else {
+                document.getElementById('resumeContainer').classList.add('hidden');
+                document.getElementById('resumeContainer').classList.remove('flex');
             }
-            document.getElementById('finalGross').innerText = gross;
-            document.getElementById('finalStableford').innerText = stb;
-            document.getElementById('gameScreen').classList.add('hidden');
-            document.getElementById('summaryScreen').classList.remove('hidden');
         }
-        function hardReset() { localStorage.removeItem('golfState_v48'); location.reload(); }
 
-        // GPS & TRAINING SIMPLIFICADOS
-        function toggleGPS() {
-            const p = document.getElementById('gpsPanel');
-            if(p.classList.contains('hidden')) {
-                p.classList.remove('hidden');
-                if(navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(pos => {
-                        gpsStart = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-                        document.getElementById('gpsStatus').innerText = "Midiendo...";
-                        gpsWatch = navigator.geolocation.watchPosition(curr => {
-                            const d = getDist(gpsStart.lat, gpsStart.lng, curr.coords.latitude, curr.coords.longitude);
-                            document.getElementById('gpsDistance').innerHTML = `${Math.round(d)}<span class="text-lg opacity-50">m</span>`;
-                        });
-                    });
+        function discardSavedGame() { if(confirm("¿Borrar partida a medias?")) { localStorage.removeItem('golfAppState_v42'); checkSavedGame(); } }
+        function goHome() { document.querySelectorAll('div[id$="Screen"], div[id$="Hub"]').forEach(el => { if(el.id !== 'splashScreen') el.classList.add('hidden'); if(el.id === 'gameScreen' || el.id === 'activeTrainingScreen') el.classList.remove('flex'); }); document.getElementById('homeScreen').classList.remove('hidden'); checkSavedGame(); }
+        function goToSetup() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('setupScreen').classList.remove('hidden'); }
+        function goToTrainingHub() { analyzeForTraining(); document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('trainingHub').classList.remove('hidden'); }
+        function resumeGame() { const savedState = localStorage.getItem('golfAppState_v42'); if (savedState) { const s = JSON.parse(savedState); hcpRealExact = s.hcpRealExact; hcpTargetExact = s.hcpTargetExact; startHoleLimit = s.startHoleLimit; endHoleLimit = s.endHoleLimit; roundData = s.roundData; currentHole = s.currentHole; document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex'); loadHole(currentHole); } }
+        function startNewGame() { const realVal = parseFloat(document.getElementById('handicapRealInput').value); const targetVal = parseFloat(document.getElementById('handicapTargetInput').value); if (isNaN(realVal)) return alert("Pon tu hándicap real"); hcpRealExact = realVal; hcpTargetExact = isNaN(targetVal) ? Math.floor(hcpRealExact) : targetVal; roundData = {}; currentShots = []; currentMood = null; if (!currentHole || currentHole < startHoleLimit) currentHole = startHoleLimit; localStorage.removeItem('golfAppState_v42'); document.getElementById('setupScreen').classList.add('hidden'); document.getElementById('gameScreen').classList.remove('hidden'); document.getElementById('gameScreen').classList.add('flex'); saveState(); loadHole(currentHole); }
+        function calculateNetPar(holeIdx, exactHcp) { const playingHcp = Math.round(exactHcp); const hole = courseData[holeIdx]; let strokes = Math.floor(playingHcp / 18); if (hole.si <= (playingHcp % 18)) strokes++; return hole.p + strokes; }
+        function loadHole(num) { currentHole = num; const idx = num - 1; const hole = courseData[idx]; const personalPar = calculateNetPar(idx, hcpRealExact); document.getElementById('holeDisplay').innerText = `Hoyo ${hole.h}`; document.getElementById('parDisplay').innerText = hole.p; document.getElementById('displayTargetHcp').innerText = Math.round(hcpTargetExact); document.getElementById('nextButtonText').innerText = (currentHole === endHoleLimit) ? "TERMINAR" : "SIGUIENTE"; if (roundData[currentHole]) { currentInputScore = roundData[currentHole].score; currentShots = roundData[currentHole].shots; currentMood = roundData[currentHole].mood; } else { currentInputScore = personalPar; currentMood = 'normal'; let names = new Array(personalPar).fill("Avance"); if (personalPar >= 1) names[personalPar-1] = "Meter Putt"; if (personalPar >= 2) names[personalPar-2] = "Lag Putt"; if (personalPar >= 3) names[personalPar-3] = "Coger Green"; if (personalPar >= 4) names[0] = "Salida / Calle"; currentShots = names.map(n => ({ name: n, type: 'normal', status: 'pending' })); } updateUI(); saveState(); document.getElementById('checklistContainer').scrollTop = 0; }
+        function updateUI() { document.getElementById('currentHoleScore').innerText = currentInputScore; document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected')); if(currentMood) document.getElementById(`mood-${currentMood}`).classList.add('selected'); const holeTarget = calculateNetPar(currentHole - 1, hcpTargetExact); const holePersonal = calculateNetPar(currentHole - 1, hcpRealExact); document.getElementById('displayTargetStrokes').innerText = holeTarget; document.getElementById('displayPersonalPar').innerText = holePersonal; let runningTotal = 0; let tempRound = {...roundData}; tempRound[currentHole] = { score: currentInputScore }; for (let i = startHoleLimit; i <= endHoleLimit; i++) { if (tempRound[i]) { runningTotal += tempRound[i].score; } } document.getElementById('runningScoreDisplay').innerText = runningTotal; const list = document.getElementById('checklistContainer'); list.innerHTML = ''; let success = 0, activeIdx = -1; currentShots.forEach((s, i) => { if (s.status === 'success') success++; if (s.status === 'pending' && activeIdx === -1) activeIdx = i; const div = document.createElement('div'); div.className = `p-4 rounded-3xl border mb-3 transition-all relative overflow-hidden ${s.status === 'pending' ? (i === activeIdx ? 'bg-slate-800 border-emerald-500 shadow-lg scale-[1.01] z-10' : 'bg-slate-900 border-slate-800 opacity-60') : (s.status==='success' ? 'bg-emerald-600 border-emerald-600 text-white shadow-md' : 'bg-slate-900 border-red-900/50')}`; let html = `<div class="flex justify-between items-center mb-1"><span class="text-[9px] font-black uppercase tracking-widest ${s.status==='success'?'text-emerald-200':'text-slate-500'}">${s.type==='recovery'?'RECUPERACIÓN':`GOLPE ${i+1}`}</span>`; if(s.status !== 'pending') html += `<button onclick="resetShot(${i})" class="bg-white/10 hover:bg-white/20 p-1.5 rounded-full text-white backdrop-blur-sm transition-colors"><i data-lucide="rotate-ccw" class="w-3 h-3"></i></button>`; html += `</div><div class="flex justify-between items-center"><h3 class="text-lg font-bold tracking-tight ${s.status === 'fail' ? 'text-slate-500 line-through decoration-red-500' : ''}">${s.name}</h3>`; if(s.status === 'success') html += `<div class="bg-white/20 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4"></i></div>`; else if(s.status === 'fail') html += `<div class="bg-red-500/20 p-1 rounded-full"><i data-lucide="x" class="w-4 h-4 text-red-500"></i></div>`; html += `</div>`; if(s.status === 'pending') html += `<div class="flex gap-3 mt-4"><button onclick="shot(${i}, true)" class="flex-1 bg-emerald-600 text-white py-2.5 text-xs font-bold rounded-xl shadow-lg hover:bg-emerald-500 transition-colors">CONSEGUIDO</button><button onclick="shot(${i}, false)" class="flex-1 bg-slate-800 text-rose-400 border border-rose-900/50 py-2.5 text-xs font-bold rounded-xl shadow-sm hover:bg-slate-700 transition-colors">FALLO</button></div>`; div.innerHTML = html; list.appendChild(div); }); const pct = Math.round((success/currentShots.length)*100)||0; document.getElementById('progressBar').style.width = `${pct}%`; lucide.createIcons(); }
+        function shot(i, ok) { currentShots[i].status = ok ? 'success' : 'fail'; if (ok && "vibrate" in navigator) { try { navigator.vibrate(50); } catch(e){} } if(!ok) currentShots.splice(i+1, 0, { name: "Recuperación", type: "recovery", status: "pending" }); saveState(); updateUI(); saveCurrentHoleData(); }
+        function resetShot(i) { const wasFail = currentShots[i].status === 'fail'; currentShots[i].status = 'pending'; if (wasFail && currentShots[i+1] && currentShots[i+1].type === 'recovery') currentShots.splice(i+1, 1); saveState(); updateUI(); saveCurrentHoleData(); }
+        function adjustScore(d) { currentInputScore += d; if(currentInputScore < 1) currentInputScore = 1; updateUI(); saveCurrentHoleData(); }
+        function saveCurrentHoleData() { roundData[currentHole] = { score: currentInputScore, mood: currentMood, shots: currentShots }; saveState(); }
+        function setMood(m) { currentMood = m; updateUI(); saveCurrentHoleData(); }
+        function nextHole() { if(!currentMood && !confirm("¿Sin estado mental?")) return; if(!currentMood) currentMood = 'normal'; saveCurrentHoleData(); if(currentHole < endHoleLimit) { getCaddieMessage(currentInputScore - courseData[currentHole-1].p, currentMood); } else { showSummary(); } }
+        function prevHole() { saveCurrentHoleData(); if(currentHole > startHoleLimit) loadHole(currentHole - 1); }
+        function finishRoundNow() { if(confirm("¿Terminar vuelta?")) { saveCurrentHoleData(); showSummary(true); } }
+        function getCaddieMessage(diff, mood) { let category = 'neutral'; if (diff <= -1) category = 'hype'; else if (diff === 0 && mood !== 'angry') category = 'good'; else if (diff >= 2 || mood === 'angry') category = 'recovery'; const caddieAI={hype:["¡Estás en la zona!","¡Clase mundial!","Ese sonido ha sido música.","Mantén este ritmo.","Caminas distinto hoy."],good:["Muy sólida.","Estrategia perfecta.","Confianza a tope.","Sigue sumando.","Buen hoyo, mejor actitud."],neutral:["Un golpe a la vez.","Paciencia y ritmo.","Confía en tu rutina.","Visualiza el siguiente.","Disfruta del paseo."],recovery:["El golf es recuperación.","Olvida el resultado.","Respira. Acepta. Avanza.","No te castigues.","Borrón y cuenta nueva."]}; const phrases = caddieAI[category]; const msg = phrases[Math.floor(Math.random() * phrases.length)]; const iconEl = document.getElementById('mindsetIcon'); if(category === 'hype') iconEl.innerHTML = '<i data-lucide="zap" class="w-16 h-16 text-yellow-400"></i>'; else if(category === 'good') iconEl.innerHTML = '<i data-lucide="thumbs-up" class="w-16 h-16 text-emerald-400"></i>'; else if(category === 'recovery') iconEl.innerHTML = '<i data-lucide="wind" class="w-16 h-16 text-blue-400"></i>'; else iconEl.innerHTML = '<i data-lucide="sun" class="w-16 h-16 text-orange-300"></i>'; document.getElementById('mindsetTitle').innerText = (category === 'hype' ? "¡BOOM!" : (category === 'recovery' ? "CALMA" : "BIEN JUGADO")); document.getElementById('mindsetBody').innerText = msg; const screen = document.getElementById('mindsetScreen'); screen.classList.remove('hidden'); lucide.createIcons(); setTimeout(() => { screen.classList.add('hidden'); loadHole(currentHole + 1); }, 4500); }
+        function showSummary(earlyFinish = false) { try { saveCurrentHoleData(); let score = 0, totalPar = 0, strokesReal = 0, strokesTarget = 0, played = 0; let limit = earlyFinish ? currentHole : endHoleLimit; const visualContainer = document.getElementById('visualRoundSummary'); visualContainer.innerHTML = ''; const safeStart = parseInt(startHoleLimit); const safeEnd = parseInt(limit); for(let i=safeStart; i<=safeEnd; i++){ if(!roundData[i]) continue; const hScore = roundData[i].score || 0; const hPar = courseData[i-1] ? courseData[i-1].p : 4; score += hScore; totalPar += hPar; const sR = calculateNetPar(i-1, hcpRealExact); const sT = calculateNetPar(i-1, hcpTargetExact); strokesReal += sR; strokesTarget += sT; played++; const diff = hScore - hPar; let bgColor = 'bg-slate-800 border-slate-700'; let textColor = 'text-slate-400'; if(diff <= -1) { bgColor = 'bg-sky-900/50 border-sky-700'; textColor = 'text-sky-300'; } else if(diff === 0) { bgColor = 'bg-emerald-900/50 border-emerald-700'; textColor = 'text-emerald-300'; } else if(diff >= 2) { bgColor = 'bg-rose-900/50 border-rose-800'; textColor = 'text-rose-400'; } visualContainer.innerHTML += `<div class="flex-shrink-0 w-24 h-20 rounded-2xl border ${bgColor} flex flex-col items-center justify-center snap-center"><span class="text-[9px] font-bold uppercase opacity-50 mb-0.5">Hoyo ${i}</span><span class="text-2xl font-black ${textColor} leading-none">${hScore}</span><span class="text-[10px] font-bold bg-black/20 px-1.5 rounded opacity-60 mt-1">Par ${hPar}</span></div>`; } document.getElementById('holesPlayedText').innerText = `${played} HOYOS JUGADOS`; document.getElementById('finalGross').innerText = `${score} / ${totalPar}`; document.getElementById('resTargetPts').innerText = strokesTarget; document.getElementById('resRealPts').innerText = strokesReal; const verdictEl = document.getElementById('finalVerdictDisplay'); const diffTarget = score - strokesTarget; if (diffTarget <= 0) { verdictEl.className = "text-center bg-emerald-500/10 border border-emerald-500/50 p-4 rounded-2xl mb-4"; verdictEl.innerHTML = `<h3 class="text-emerald-400 font-black text-xl uppercase tracking-widest mb-1">¡OBJETIVO CUMPLIDO!</h3><p class="text-xs text-emerald-200">Has ganado por ${Math.abs(diffTarget)} golpes</p>`; } else { verdictEl.className = "text-center bg-orange-500/10 border border-orange-500/50 p-4 rounded-2xl mb-4"; verdictEl.innerHTML = `<h3 class="text-orange-400 font-black text-xl uppercase tracking-widest mb-1">OBJETIVO NO ALCANZADO</h3><p class="text-xs text-orange-200">Te han sobrado ${diffTarget} golpes</p>`; } const msgEl = document.getElementById('challengeMsg'); let quoteCategory = 'good'; if (score <= strokesReal) quoteCategory = 'great'; else if (score > strokesReal + 5) quoteCategory = 'tough'; const qList = legendQuotes[quoteCategory] || legendQuotes['good']; const randomQuote = qList[Math.floor(Math.random() * qList.length)]; msgEl.innerText = randomQuote; document.getElementById('gameScreen').classList.add('hidden'); document.getElementById('summaryScreen').classList.remove('hidden'); document.getElementById('summaryScreen').classList.add('flex'); } catch (e) { console.error(e); alert("Error crítico al generar resumen. Se mostrará pantalla incompleta."); document.getElementById('gameScreen').classList.add('hidden'); document.getElementById('summaryScreen').classList.remove('hidden'); document.getElementById('summaryScreen').classList.add('flex'); } }
+        function openStats() { let success=0; let failures = { long: 0, short: 0, putt: 0 }; for(let i=startHoleLimit; i<=endHoleLimit; i++){ if(roundData[i] && roundData[i].shots){ roundData[i].shots.forEach(sh => { let name = sh.name.toLowerCase(); let type = 'long'; if(name.includes('putt')) type='putt'; else if(name.includes('green')||name.includes('recup')||name.includes('aprox')) type='short'; if(sh.status==='success') success++; if(sh.status==='fail') failures[type]++; }); } } const totalFail = failures.long + failures.short + failures.putt; const bar = document.getElementById('failureDistributionBar'); bar.innerHTML = ''; if(totalFail > 0) { const pLong = (failures.long / totalFail) * 100; const pShort = (failures.short / totalFail) * 100; const pPutt = (failures.putt / totalFail) * 100; if(pLong > 0) bar.innerHTML += `<div style="width:${pLong}%" class="h-full bg-blue-500"></div>`; if(pShort > 0) bar.innerHTML += `<div style="width:${pShort}%" class="h-full bg-orange-400"></div>`; if(pPutt > 0) bar.innerHTML += `<div style="width:${pPutt}%" class="h-full bg-emerald-500"></div>`; } else { bar.innerHTML = `<div class="w-full h-full flex items-center justify-center text-[10px] opacity-30">Sin datos de fallos</div>`; } const cards = document.getElementById('failureCards'); cards.innerHTML = ''; const createCard = (title, count, total, colorClass, borderClass, iconColor) => { const pct = total > 0 ? Math.round((count/total)*100) : 0; const isPriority = pct >= 40 && total > 2; const bg = isPriority ? 'bg-red-900/20 border-red-800' : 'card'; return `<div class="p-4 rounded-2xl ${bg} flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-2 h-10 rounded-full ${colorClass}"></div><div><p class="font-bold">${title}</p><p class="text-xs opacity-50">${count} Fallos</p></div></div><div class="text-right">${isPriority ? '<span class="text-[9px] font-black text-red-400 uppercase tracking-wide block mb-1">⚠️ PRIORIDAD</span>' : ''}<span class="text-2xl font-black ${isPriority ? 'text-red-400' : ''}">${pct}%</span></div></div>`; }; cards.innerHTML += createCard('Juego Largo', failures.long, totalFail, 'bg-blue-500', 'border-blue-200', 'text-blue-500'); cards.innerHTML += createCard('Juego Corto', failures.short, totalFail, 'bg-orange-400', 'border-orange-200', 'text-orange-400'); cards.innerHTML += createCard('Putt', failures.putt, totalFail, 'bg-emerald-500', 'border-emerald-200', 'text-emerald-500'); let recs = []; const maxFail = Math.max(failures.long, failures.short, failures.putt); if(maxFail > 0) { if(failures.putt === maxFail) recs.push("Green: Demasiados putts. Dedica tiempo a distancias cortas."); else if(failures.short === maxFail) recs.push("Juego Corto: Pierdes golpes recuperando."); else if(failures.long === maxFail) recs.push("Salidas: Asegura calle, no busques distancia."); } else { recs.push("No hay suficientes datos de golpes marcados."); } document.getElementById('coachRecommendations').innerHTML = recs.map(r => `<p>${r}</p>`).join(''); document.getElementById('statsScreen').classList.remove('hidden'); }
+        function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
+        function hardReset() { if(confirm("¿Descartar partida?")) { localStorage.removeItem('golfAppState_v42'); location.reload(); } }
+        function saveAndFinish() { const gross = parseInt(document.getElementById('finalGross').innerText.split('/')[0]); const stbReal = parseInt(document.getElementById('resRealPts').innerText); const rec = { date: new Date().toLocaleDateString('es-ES', {day: 'numeric', month:'short'}), gross: gross, stableford: stbReal, holes: `${startHoleLimit}-${currentHole}` }; gameHistory.push(rec); localStorage.setItem('golfAppHistory', JSON.stringify(gameHistory)); localStorage.removeItem('golfAppState_v42'); location.reload(); }
+        function showHistory() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('setupScreen').classList.add('hidden'); document.getElementById('historyScreen').classList.remove('hidden'); document.getElementById('historyScreen').classList.add('flex'); renderHist(); }
+        function closeHistory() { document.getElementById('historyScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
+        function clearHistory() { if(confirm("¿Borrar historial?")) { localStorage.removeItem('golfAppHistory'); gameHistory=[]; renderHist(); } }
+        function renderHist() { const list = document.getElementById('historyList'); list.innerHTML = ''; let scores = gameHistory.filter(g => g.gross).map(g => g.gross); if(scores.length > 0) document.getElementById('histBestGross').innerText = Math.min(...scores); else document.getElementById('histBestGross').innerText = "--"; gameHistory.slice().reverse().forEach(g => { const isStbOnly = g.gross === undefined; list.innerHTML += `<div class="card p-4 rounded-2xl flex justify-between items-center shadow-sm"><div><p class="text-[10px] opacity-50 font-bold uppercase tracking-wider mb-0.5">${g.date}</p><p class="text-xs font-bold opacity-70">Hoyos ${g.holes}</p></div><div class="text-right"><span class="block font-black text-lg">${isStbOnly ? '-' : g.gross} <span class="text-[10px] opacity-50 font-normal">GOLPES</span></span><span class="block text-xs font-bold text-emerald-500">${g.stableford || g.score} Pts</span></div></div>`; }); const container = document.getElementById('chartContainer'); container.innerHTML = ''; if (scores.length < 2) { container.innerHTML = '<span class="flex items-center justify-center h-full w-full">Juega más partidas</span>'; return; } const max = Math.max(...scores) + 2; const min = Math.min(...scores) - 2; const w = container.clientWidth; const h = container.clientHeight; const range = max - min; const stepX = w / (scores.length - 1); let points = ""; let areaPoints = `0,${h} `; scores.forEach((s, i) => { const x = i * stepX; const y = h - ((s - min) / range) * h; points += `${x},${y} `; areaPoints += `${x},${y} `; }); areaPoints += `${w},${h}`; container.innerHTML = `<svg width="100%" height="100%" style="overflow:visible"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#10b981;stop-opacity:0.2" /><stop offset="100%" style="stop-color:#10b981;stop-opacity:0" /></linearGradient></defs><path d="${areaPoints}" fill="url(#grad)" /><polyline points="${points}" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /><circle cx="${(scores.length-1)*stepX}" cy="${h - ((scores[scores.length-1] - min) / range) * h}" r="4" fill="white" stroke="#10b981" stroke-width="2" /></svg>`; }
+        function analyzeForTraining() { const r = Math.random(); if(r < 0.33) setTrainingRecommendation('putt', 'Estadísticas sugieren mejorar putt.'); else if(r < 0.66) setTrainingRecommendation('short', 'Recuperación es clave hoy.'); else setTrainingRecommendation('long', 'Afianza tu swing largo.'); }
+        function setTrainingRecommendation(type, reason) { currentFocus = type; let title = ""; if(type === 'putt') title = "Putting Master"; else if(type === 'short') title = "Wedge Wizard"; else title = "Iron Striker"; document.getElementById('trainingFocusTitle').innerText = title; document.getElementById('trainingFocusReason').innerText = reason; }
+        function forceTraining(type) { setTrainingRecommendation(type, "Sesión manual."); startTrainingSession(type); }
+        function switchTrainingTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if(tab === 'golf') {
+                document.getElementById('golfTrainingContent').classList.remove('hidden');
+                document.getElementById('gymTrainingContent').classList.add('hidden');
+            } else {
+                document.getElementById('golfTrainingContent').classList.add('hidden');
+                document.getElementById('gymTrainingContent').classList.remove('hidden');
+            }
+        }
+        function startGymSession(day) {
+            currentFocus = 'gym'; 
+            document.getElementById('trainingHub').classList.add('hidden');
+            document.getElementById('activeTrainingScreen').classList.remove('hidden');
+            document.getElementById('activeTrainingScreen').classList.add('flex');
+            
+            const list = document.getElementById('drillsContainer');
+            list.innerHTML = '';
+            
+            let routines = gymRoutines[day];
+            let title = day === 'day1' ? "D1: Fuerza" : (day === 'day2' ? "D2: Potencia" : (day === 'day3' ? "D3: Conexión" : "Calentamiento"));
+            document.getElementById('sessionTitle').innerText = title;
+
+            currentDrills = JSON.parse(JSON.stringify(routines));
+            currentDrills.forEach((drill, idx) => {
+                let intensityBar = `<div class="flex gap-0.5 mt-2 h-1.5 w-16 opacity-50">`;
+                for(let k=0; k<5; k++) {
+                    let color = (k*20 < drill.intensity) ? 'bg-violet-400' : 'bg-slate-700';
+                    intensityBar += `<div class="flex-1 rounded-full ${color}"></div>`;
                 }
-            } else { p.classList.add('hidden'); if(gpsWatch) navigator.geolocation.clearWatch(gpsWatch); }
-        }
-        function getDist(lat1,lon1,lat2,lon2) { const R = 6371e3; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180; const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
+                intensityBar += `</div>`;
 
-        function switchTab(t) {
-            if(t==='golf') { document.getElementById('golfContent').classList.remove('hidden'); document.getElementById('gymContent').classList.add('hidden'); }
-            else { document.getElementById('golfContent').classList.add('hidden'); document.getElementById('gymContent').classList.remove('hidden'); }
-        }
-        function startGymSession(type) {
-            const drills = gymDrills[type] || [];
-            const container = document.getElementById('drillsContainer');
-            container.innerHTML = '';
-            drills.forEach(d => {
-                container.innerHTML += `<div class="card p-4 rounded-2xl"><h3 class="font-bold mb-2">${d.n}</h3><img src="${d.i}" class="w-full rounded-xl border border-white/10" onerror="this.style.display='none'"></div>`;
+                // Tarjeta de Ejercicio + Imagen Oculta Expandible
+                list.innerHTML += `
+                <div class="card p-4 rounded-2xl group border border-slate-800" id="drill-${idx}">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="activity" class="w-3 h-3 text-violet-400"></i>
+                                <p class="font-bold text-base text-white">${drill.name}</p>
+                            </div>
+                            <p class="text-xs text-slate-400 font-bold mt-0.5">${drill.reps}</p>
+                            ${intensityBar}
+                        </div>
+                        <button onclick="completeDrill(${idx})" class="w-12 h-12 rounded-full border-2 border-slate-600 flex items-center justify-center text-transparent hover:bg-violet-500 hover:text-white hover:border-violet-500 transition-all active:scale-90" id="btn-drill-${idx}">
+                            <i data-lucide="check" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    
+                    <button onclick="toggleDemo(${idx})" class="w-full text-[10px] font-bold uppercase tracking-widest text-violet-400 bg-violet-900/10 py-2 rounded-lg hover:bg-violet-900/30 transition-colors flex items-center justify-center gap-1">
+                        Ver Demo <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                    </button>
+
+                    <div id="demo-${idx}" class="hidden mt-3 pt-3 border-t border-white/5 animate-fade-in-up">
+                         <div class="bg-white/5 p-3 rounded-xl mb-3">
+                            <p class="text-xs italic text-slate-300">💡 "${drill.tip}"</p>
+                         </div>
+                         <img src="${drill.img}" alt="${drill.name}" class="w-full rounded-xl border border-white/10" onerror="this.style.display='none'">
+                    </div>
+                </div>`;
             });
-            document.getElementById('trainingHub').classList.add('hidden');
-            document.getElementById('activeTrainingScreen').classList.remove('hidden'); document.getElementById('activeTrainingScreen').classList.add('flex');
+            lucide.createIcons();
+            
+            trainingSeconds = 0; clearInterval(trainingTimerInterval); trainingTimerInterval = setInterval(() => { trainingSeconds++; const m = Math.floor(trainingSeconds / 60).toString().padStart(2,'0'); const s = (trainingSeconds % 60).toString().padStart(2,'0'); document.getElementById('sessionTimer').innerText = `${m}:${s}`; }, 1000);
         }
+
+        function toggleDemo(idx) {
+            const demo = document.getElementById(`demo-${idx}`);
+            demo.classList.toggle('hidden');
+        }
+
         function startTrainingSession(type) {
-             const drills = golfDrills[type] || [];
-             const container = document.getElementById('drillsContainer');
-             container.innerHTML = '';
-             drills.forEach(d => {
-                container.innerHTML += `<div class="card p-4 rounded-2xl flex justify-between"><span class="font-bold">${d.n}</span><span class="text-emerald-500 font-bold">+${d.xp} XP</span></div>`;
-            });
+            if(!type) type = currentFocus; 
             document.getElementById('trainingHub').classList.add('hidden');
-            document.getElementById('activeTrainingScreen').classList.remove('hidden'); document.getElementById('activeTrainingScreen').classList.add('flex');
+            document.getElementById('activeTrainingScreen').classList.remove('hidden');
+            document.getElementById('activeTrainingScreen').classList.add('flex');
+            
+            const list = document.getElementById('drillsContainer');
+            list.innerHTML = '';
+            
+            currentDrills = JSON.parse(JSON.stringify(drillLibrary[type]));
+            document.getElementById('sessionTitle').innerText = type === 'putt' ? "Putt" : (type === 'short' ? "Corto" : "Largo");
+            
+            currentDrills.forEach((drill, idx) => {
+                list.innerHTML += `<div class="card p-4 rounded-2xl flex items-center justify-between group" id="drill-${idx}"><div><p class="font-bold text-base text-white">${drill.name}</p><p class="text-xs text-emerald-400 font-bold">+${drill.xp} XP</p></div><button onclick="completeDrill(${idx})" class="w-10 h-10 rounded-full border-2 border-slate-600 flex items-center justify-center text-transparent hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all" id="btn-drill-${idx}"><i data-lucide="check" class="w-5 h-5"></i></button></div>`;
+            });
+            lucide.createIcons();
+            trainingSeconds = 0; clearInterval(trainingTimerInterval); trainingTimerInterval = setInterval(() => { trainingSeconds++; const m = Math.floor(trainingSeconds / 60).toString().padStart(2,'0'); const s = (trainingSeconds % 60).toString().padStart(2,'0'); document.getElementById('sessionTimer').innerText = `${m}:${s}`; }, 1000);
         }
-        function finishTraining() { document.getElementById('activeTrainingScreen').classList.add('hidden'); document.getElementById('activeTrainingScreen').classList.remove('flex'); goHome(); }
 
+        function completeDrill(idx) {
+            const btn = document.getElementById(`btn-drill-${idx}`);
+            const card = document.getElementById(`drill-${idx}`);
+            const isGym = currentFocus === 'gym';
+            const activeColor = isGym ? 'bg-violet-500' : 'bg-emerald-500';
+            const activeBorder = isGym ? 'border-violet-500' : 'border-emerald-500';
+            const activeBg = isGym ? 'bg-violet-900/20' : 'bg-emerald-900/20';
+
+            if(btn.classList.contains(activeColor)) {
+                btn.classList.remove(activeColor, 'text-white', activeBorder);
+                btn.classList.add('text-transparent', 'border-slate-600');
+                card.classList.remove(activeBg, activeBorder.replace('500','900'));
+                currentDrills[idx].done = false;
+            } else {
+                btn.classList.remove('text-transparent', 'border-slate-600');
+                btn.classList.add(activeColor, 'text-white', activeBorder);
+                card.classList.add(activeBg, activeBorder.replace('500','900'));
+                currentDrills[idx].done = true;
+                if ("vibrate" in navigator) { try { navigator.vibrate(50); } catch(e){} }
+            }
+        }
+        function finishTraining() { clearInterval(trainingTimerInterval); let xpGained = 0; currentDrills.forEach(d => { if(d.done) xpGained += d.xp; }); if(xpGained > 0) { trainingData.xp += xpGained; trainingData.sessions.push({ date: new Date().toLocaleDateString(), type: currentFocus, duration: trainingSeconds, xp: xpGained }); localStorage.setItem('golfAppTraining', JSON.stringify(trainingData)); updateXPDisplay(); alert(`¡Entrenamiento completado!\n+${xpGained} XP`); } else { alert("Sesión cancelada."); } document.getElementById('activeTrainingScreen').classList.add('hidden'); goHome(); }
+        function updateXPDisplay() { const xp = trainingData.xp; document.getElementById('xpTotal').innerText = xp; let level = "Novato"; if(xp > 500) level = "Aficionado"; if(xp > 1500) level = "Pro"; if(xp > 3000) level = "Maestro"; document.getElementById('xpLevel').innerText = level; }
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+        function saveState() { localStorage.setItem('golfAppState_v42', JSON.stringify({ hcpRealExact, hcpTargetExact, startHoleLimit, endHoleLimit, roundData, currentHole })); }
+        function setMode(s, e, btn) { startHoleLimit = s; endHoleLimit = e; document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); document.getElementById('startRoundBtn').innerText = (s === 10) ? "AL TEE DEL 10" : "AL TEE DEL 1"; }
     </script>
 </body>
 </html>

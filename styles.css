@@ -49,6 +49,7 @@ button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   touch-action: manipulation;
 }
+
 button:active {
   transform: scale(0.96);
 }
@@ -58,6 +59,7 @@ button:active {
   background: var(--bg-card);
   color: var(--text-sub);
 }
+
 .mode-btn.selected {
   border: 2px solid #10b981;
   background-color: rgba(16, 185, 129, 0.1);
@@ -70,6 +72,7 @@ button:active {
   opacity: 0.4;
   transition: all 0.3s;
 }
+
 .mood-btn.selected {
   filter: grayscale(0%);
   opacity: 1;
@@ -81,6 +84,7 @@ button:active {
   opacity: 0.5;
   border-bottom: 2px solid transparent;
 }
+
 .tab-btn.active {
   opacity: 1;
   border-bottom: 2px solid #10b981;

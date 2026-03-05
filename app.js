@@ -1,4 +1,5 @@
-// Tu script original, tal cual, solo que fuera del HTML
+// Fairway Caddie - app.js (failsafe bootstrap + stubs)
+// Esto evita que el splash se quede colgado y evita crashes por funciones faltantes.
 
 const courseData = [
   { h: 1, p: 4, si: 15 }, { h: 2, p: 4, si: 17 }, { h: 3, p: 4, si: 3 }, { h: 4, p: 4, si: 13 },
@@ -13,8 +14,6 @@ let hcpRealExact = 24.9, hcpTargetExact = 18.0;
 let currentShots = [], currentInputScore = 0, currentMood = null, roundData = {}, gameHistory = [], trainingData = { xp: 0, sessions: [] };
 let trainingTimerInterval = null, trainingSeconds = 0;
 
-// OJO: en tu código usas currentFocus y currentDrills sin declararlos al inicio.
-// Los declaro aquí para evitar bugs silenciosos:
 let currentFocus = "putt";
 let currentDrills = [];
 
@@ -39,7 +38,6 @@ const drillLibrary = {
   ]
 };
 
-// --- RUTINAS GYM PERSONALIZADAS ---
 const gymRoutines = {
   warmup: [
     { name: "Gato-Vaca", reps: "10 reps", xp: 50, intensity: 20, img: "calentamiento.png", tip: "Mobiliza toda la columna. Despacio." },
@@ -85,48 +83,123 @@ const legendQuotes = {
   ]
 };
 
+// Helpers DOM
+function $(id) { return document.getElementById(id); }
+
+// Arranque a prueba de bombas
 window.onload = function () {
-  lucide.createIcons();
+  try {
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons();
+    }
 
-  setTimeout(() => {
-    document.getElementById("splashScreen").style.opacity = "0";
+    // Splash (fallback seguro)
     setTimeout(() => {
-      document.getElementById("splashScreen").classList.add("hidden");
-      document.getElementById("homeScreen").classList.remove("hidden");
-    }, 1000);
-  }, 2000);
+      const splash = $("splashScreen");
+      const home = $("homeScreen");
+      if (splash) splash.style.opacity = "0";
+      setTimeout(() => {
+        if (splash) splash.classList.add("hidden");
+        if (home) home.classList.remove("hidden");
+      }, 900);
+    }, 1200);
 
-  document.getElementById("handicapRealInput").addEventListener("input", function (e) {
-    const val = parseFloat(e.target.value);
-    if (!isNaN(val)) document.getElementById("realPlayingHcpDisplay").innerText = `Juegas con: ${Math.round(val)} golpes`;
-  });
+    // Listener handicap (solo si existe)
+    const handicapInput = $("handicapRealInput");
+    if (handicapInput) {
+      handicapInput.addEventListener("input", function (e) {
+        const val = parseFloat(e.target.value);
+        const label = $("realPlayingHcpDisplay");
+        if (!isNaN(val) && label) label.innerText = `Juegas con: ${Math.round(val)} golpes`;
+      });
+    }
 
-  if (localStorage.getItem("golfAppHistory")) gameHistory = JSON.parse(localStorage.getItem("golfAppHistory"));
-  if (localStorage.getItem("golfAppTraining")) trainingData = JSON.parse(localStorage.getItem("golfAppTraining"));
+    // Cargar storage
+    try {
+      const h = localStorage.getItem("golfAppHistory");
+      if (h) gameHistory = JSON.parse(h);
+    } catch (_) {}
+    try {
+      const t = localStorage.getItem("golfAppTraining");
+      if (t) trainingData = JSON.parse(t);
+    } catch (_) {}
 
-  updateXPDisplay();
-  checkSavedGame();
+    updateXPDisplay();
+    checkSavedGame();
+
+  } catch (e) {
+    console.error("Init error:", e);
+    // Nunca dejar al usuario en splash
+    const splash = $("splashScreen");
+    const home = $("homeScreen");
+    if (splash) splash.classList.add("hidden");
+    if (home) home.classList.remove("hidden");
+  }
 };
 
-// === El resto de tu JS original va aquí SIN CAMBIOS ===
-// Para no inundarte con miles de líneas duplicadas en un solo mensaje,
-// pega a continuación TODO lo que tenías en tu <script> desde:
-// function checkSavedGame() { ... }
-// hasta el final.
-// (Si quieres, pégalo y yo te lo devuelvo ya “ordenado” por módulos.)
+// === Funciones mínimas que sí existen en tu HTML ===
+function updateXPDisplay() {
+  const xp = trainingData?.xp ?? 0;
+  const xpTotal = $("xpTotal");
+  const xpLevel = $("xpLevel");
+  if (xpTotal) xpTotal.innerText = xp;
+
+  let level = "Novato";
+  if (xp > 500) level = "Aficionado";
+  if (xp > 1500) level = "Pro";
+  if (xp > 3000) level = "Maestro";
+  if (xpLevel) xpLevel.innerText = level;
+}
 
 function checkSavedGame() {
   const savedState = localStorage.getItem("golfAppState_v42");
-  if (savedState) {
-    document.getElementById("resumeContainer").classList.remove("hidden");
-    document.getElementById("resumeContainer").classList.add("flex");
-    const s = JSON.parse(savedState);
-    if (s.startHoleLimit === 10) document.getElementById("startRoundBtn").innerText = "AL TEE DEL 10";
-  } else {
-    document.getElementById("resumeContainer").classList.add("hidden");
-    document.getElementById("resumeContainer").classList.remove("flex");
+  const resume = $("resumeContainer");
+  const startBtn = $("startRoundBtn");
+
+  if (savedState && resume) {
+    resume.classList.remove("hidden");
+    resume.classList.add("flex");
+    try {
+      const s = JSON.parse(savedState);
+      if (s?.startHoleLimit === 10 && startBtn) startBtn.innerText = "AL TEE DEL 10";
+    } catch (_) {}
+  } else if (resume) {
+    resume.classList.add("hidden");
+    resume.classList.remove("flex");
   }
 }
 
-/* Pega aquí el resto de tus funciones tal cual (goHome, goToSetup, startNewGame, loadHole, etc.) */
+// === STUBS: evitan que la app explote si faltan funciones ===
+// Esto es temporal: cuando me pegues tu JS completo original, sustituyo los stubs por tu lógica real.
 
+function notReady(name) {
+  alert(`Función "${name}" aún no está en app.js (tu archivo está incompleto). Pásame tu app.js original completo y lo arreglo.`);
+}
+
+window.goHome = () => notReady("goHome");
+window.goToSetup = () => notReady("goToSetup");
+window.goToTrainingHub = () => notReady("goToTrainingHub");
+window.resumeGame = () => notReady("resumeGame");
+window.discardSavedGame = () => notReady("discardSavedGame");
+window.setMode = () => notReady("setMode");
+window.startNewGame = () => notReady("startNewGame");
+window.prevHole = () => notReady("prevHole");
+window.nextHole = () => notReady("nextHole");
+window.adjustScore = () => notReady("adjustScore");
+window.setMood = () => notReady("setMood");
+window.finishRoundNow = () => notReady("finishRoundNow");
+window.openStats = () => notReady("openStats");
+window.closeOverlay = () => notReady("closeOverlay");
+window.saveAndFinish = () => notReady("saveAndFinish");
+window.hardReset = () => notReady("hardReset");
+window.showHistory = () => notReady("showHistory");
+window.closeHistory = () => notReady("closeHistory");
+window.clearHistory = () => notReady("clearHistory");
+window.switchTrainingTab = () => notReady("switchTrainingTab");
+window.startTrainingSession = () => notReady("startTrainingSession");
+window.forceTraining = () => notReady("forceTraining");
+window.startGymSession = () => notReady("startGymSession");
+window.toggleDemo = () => notReady("toggleDemo");
+window.completeDrill = () => notReady("completeDrill");
+window.finishTraining = () => notReady("finishTraining");
+window.toggleTheme = () => notReady("toggleTheme");

@@ -126,6 +126,30 @@
                 <input type="number" id="handicapTargetInput" step="0.1" class="w-full text-3xl p-1 text-center font-black bg-transparent outline-none text-amber-500 placeholder-amber-500/30" placeholder="18.0">
             </div>
         </div>
+        <div class="card p-4 rounded-3xl mb-4">
+            <label class="block text-[9px] font-bold opacity-50 mb-2 uppercase tracking-wider text-center">HOYO DE SALIDA</label>
+            <select id="startHoleSelect" class="course-select w-full py-3 px-4 rounded-2xl font-bold text-center outline-none">
+                <option value="1">Hoyo 1</option>
+                <option value="2">Hoyo 2</option>
+                <option value="3">Hoyo 3</option>
+                <option value="4">Hoyo 4</option>
+                <option value="5">Hoyo 5</option>
+                <option value="6">Hoyo 6</option>
+                <option value="7">Hoyo 7</option>
+                <option value="8">Hoyo 8</option>
+                <option value="9">Hoyo 9</option>
+                <option value="10">Hoyo 10</option>
+                <option value="11">Hoyo 11</option>
+                <option value="12">Hoyo 12</option>
+                <option value="13">Hoyo 13</option>
+                <option value="14">Hoyo 14</option>
+                <option value="15">Hoyo 15</option>
+                <option value="16">Hoyo 16</option>
+                <option value="17">Hoyo 17</option>
+                <option value="18">Hoyo 18</option>
+            </select>
+        </div>
+
         <div class="card p-4 rounded-3xl mb-6">
             <div class="grid grid-cols-1 gap-2">
                 <button onclick="setMode(1, 18, this)" class="mode-btn selected w-full py-3 rounded-2xl font-bold text-base">18 Hoyos</button>
@@ -488,6 +512,8 @@
 
         function goToSetup() {
             applyCourseSelection();
+            const startHoleSelect = document.getElementById('startHoleSelect');
+            if (startHoleSelect) startHoleSelect.value = String(startHoleLimit);
             showScreen('setupScreen');
         }
 
@@ -509,6 +535,8 @@
             currentHole = s.currentHole || startHoleLimit;
             selectedCourse = s.selectedCourse || 'altoreal';
             applyCourseSelection();
+            const startHoleSelect = document.getElementById('startHoleSelect');
+            if (startHoleSelect) startHoleSelect.value = String(startHoleLimit);
 
             showScreen('gameScreen');
             loadHole(currentHole);
@@ -522,12 +550,16 @@
             selectedCourse = document.getElementById('courseSelect').value || 'altoreal';
             applyCourseSelection();
 
+            const selectedStartHole = parseInt(document.getElementById('startHoleSelect').value, 10) || 1;
+            startHoleLimit = selectedStartHole;
+            endHoleLimit = selectedStartHole === 1 ? 18 : selectedStartHole - 1;
+            currentHole = startHoleLimit;
+
             hcpRealExact = realVal;
             hcpTargetExact = isNaN(targetVal) ? Math.floor(hcpRealExact) : targetVal;
             roundData = {};
             currentShots = [];
             currentMood = null;
-            if (!currentHole || currentHole < startHoleLimit) currentHole = startHoleLimit;
 
             localStorage.removeItem('golfAppState_v43');
             showScreen('gameScreen');
@@ -658,13 +690,17 @@
             if(!currentMood && !confirm('¿Sin estado mental?')) return;
             if(!currentMood) currentMood = 'normal';
             saveCurrentHoleData();
-            if(currentHole < endHoleLimit) getCaddieMessage(currentInputScore - courseData[currentHole-1].p, currentMood);
+
+            const nextHoleNumber = currentHole === 18 ? 1 : currentHole + 1;
+            if(currentHole !== endHoleLimit) getCaddieMessage(currentInputScore - courseData[currentHole-1].p, currentMood, nextHoleNumber);
             else showSummary();
         }
 
         function prevHole() {
             saveCurrentHoleData();
-            if(currentHole > startHoleLimit) loadHole(currentHole - 1);
+            if (currentHole === startHoleLimit) return;
+            const prevHoleNumber = currentHole === 1 ? 18 : currentHole - 1;
+            loadHole(prevHoleNumber);
         }
 
         function finishRoundNow() {
@@ -674,7 +710,7 @@
             }
         }
 
-        function getCaddieMessage(diff, mood) {
+        function getCaddieMessage(diff, mood, nextHoleNumber) {
             let category = 'neutral';
             if (diff <= -1) category = 'hype';
             else if (diff === 0 && mood !== 'angry') category = 'good';
@@ -702,7 +738,7 @@
             lucide.createIcons();
             setTimeout(() => {
                 screen.classList.add('hidden');
-                loadHole(currentHole + 1);
+                loadHole(nextHoleNumber);
             }, 4500);
         }
 
